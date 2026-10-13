@@ -1,0 +1,18 @@
+# Configuration automatique pour Render (https://render.com)
+# Utilisation : Render > New > Blueprint > choisis ton dépôt GitHub.
+services:
+  - type: web
+    name: tchat-pour-tous
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: SALT
+        generateValue: true
+      - key: ADMIN_KEY
+        sync: false        # Render te demande de le saisir : lettres et chiffres seulement
+      - key: MEDIA
+        value: "on"        # mets "off" pour désactiver photos et vidéos
