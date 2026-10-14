@@ -292,6 +292,12 @@ function connect(){
                           
   if(m.t==="salon"){cur=m.s;salonMsgs=m.hist.slice();salonUnread=0;renderSalons();renderTop();if(view===null){renderMsgs();$("txt").placeholder="Écris dans # "+cur+"…"}return}
   if(m.t==="sys"&&m.s===cur){addLive(salonMsgs,{sys:1,x:m.x},view===null);return}
+   if(m.t==="img" && m.s===cur){
+      addLive(salonMsgs, { u: m.u, x: '<img src="'+m.x+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />' }, view==null);
+    }
+    if(m.t==="media" && m.s===cur){
+      addLive(salonMsgs, { u: m.u, x: '<video src="'+m.x+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>' }, view==null);
+    }                       
   if(m.t==="msg"&&m.s===cur){addLive(salonMsgs,m,view===null);if(m.n!==me){beep();if(view!==null){salonUnread++;renderSalons();totalUnread()}}return}
   if(m.t==="pm"){var other=m.from===me?m.to:m.from,k=other.toLowerCase();
    if(!pms[k])pms[k]={n:other,msgs:[],unread:0};
