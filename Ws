@@ -186,7 +186,9 @@ wss.on("connection", (ws, req) => {
   const key = keyOf(req);
 
   ws.on("message", (raw) => {
-    let m; try { m = JSON.parse(raw); } catch { return; }
+    let m; try { m = JSON.parse(raw);} catch { return; }
+    console.log("Message brut reçu :", raw.toString());
+
     if (!m || (m.t !== "avatar" && m.t !== "media" && raw.length > 2048)) return;
     const c = clients.get(ws);
 
