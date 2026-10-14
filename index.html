@@ -356,23 +356,27 @@ $("rep").onclick=function(){if(view===null)return;var n=pms[view].n;if(confirm("
 $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if(!t||!ws||ws.readyState!==1)return;$("txt").value="";t=smileys(t);
  if(view===null)send({t:"msg",x:t});else send({t:"pm",to:pms[view].n,x:t})};
 })();
- (function(){
+(function(){
+  var txt = document.getElementById("txt");
+  if(!txt) return;
+
   var btn = document.createElement('button');
   btn.type = 'button';
   btn.innerHTML = '😊';
-  btn.style.cssText = 'background:none;border:none;font-size:1.3rem;cursor:pointer;margin-right:8px;';
+  btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;';
 
   var picker = document.createElement('div');
-  picker.style.cssText = 'display:none;position:absolute;bottom:60px;right:20px;background:#1f2440;border:1px solid #2e3558;border-radius:8px;padding:8px;grid-template-columns:repeat(4,1fr);gap:6px;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+  picker.style.cssText = 'display:none;position:fixed;bottom:70px;right:20px;background:#1f2440;border:1px solid #2e3558;border-radius:8px;padding:8px;grid-template-columns:repeat(4,1fr);gap:6px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4);';
 
   var emojis = ['😀','😂','😍','😎','👍','🔥','🎉','❤️','😉','🤔','🙈','✨'];
   emojis.forEach(function(e){
     var span = document.createElement('span');
     span.innerHTML = e;
-    span.style.cssText = 'cursor:pointer;font-size:1.2rem;text-align:center;padding:4px;';
-    span.onclick = function(){
-      var txt = $("#txt");
-      if(txt){ txt.value += e; txt.focus(); }
+    span.style.cssText = 'cursor:pointer;font-size:1.2rem;text-align:center;padding:4px;user-select:none;';
+    span.onclick = function(evt){
+      evt.stopPropagation();
+      txt.value += e;
+      txt.focus();
       picker.style.display = 'none';
     };
     picker.appendChild(span);
@@ -382,13 +386,15 @@ $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if
 
   btn.onclick = function(e){
     e.stopPropagation();
+    e.preventDefault();
     picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
   };
 
   document.addEventListener('click', function(){ picker.style.display = 'none'; });
 
-  var formEl = $("#form");
-  if(formEl) formEl.insertBefore(btn, formEl.firstChild);
+  if(txt.parentNode) {
+    txt.parentNode.insertBefore(btn, txt);
+  }
 })();
 </script>
 </body>
