@@ -217,6 +217,14 @@ updateSoundUI();
 
 var SM={":)":"🙂",":-)":"🙂",":D":"😃",":(":"🙁",";)":"😉",":p":"😛",":P":"😛",":o":"😮","<3":"❤️","lol":"😂","mdr":"🤣"};
 function smileys(t){return t.split(" ").map(function(w){return SM[w]||w}).join(" ")}
+function linkify(text) {
+    if (!text) return "";
+    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(exp, function(match) {
+        var cleanUrl = match.replace(/"/g, '&quot;');
+        return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; word-break:break-all;">' + match + '</a>';
+    });
+}
 function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return "hsl("+h+",60%,52%)"}
 function hhmm(ts){var d=new Date(ts||Date.now());return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
 var ac=null;
@@ -238,7 +246,7 @@ function row(m){var d=document.createElement("div");
  if(!mine){var am=av(m.n,m.i,m.p,36);am.style.cursor="pointer";am.onclick=function(){openProfile(m.n)};d.appendChild(am)}
  var c=document.createElement("div");c.className="col";
  if(!mine&&view===null){var n=document.createElement("div");n.className="nm";n.style.color=color(m.n);n.textContent=m.n;n.onclick=function(){openPm(m.n)};c.appendChild(n)}
- var b=document.createElement("div");b.className="bub";if(m.media){b.classList.add("med");b.appendChild(mediaEl(m,mine))}else b.textContent=m.x;var t=document.createElement("span");t.className="tm";t.textContent=hhmm(m.ts);b.appendChild(t);c.appendChild(b);
+ var b=document.createElement("div");b.className="bub";if(m.media){b.classList.add("med");b.appendChild(mediaEl(m,mine))}else b.innerHTML=linkify(m.x);var t=document.createElement("span");t.className="tm";t.textContent=hhmm(m.ts);b.appendChild(t);c.appendChild(b);
  if(m.media&&!mine){var rb=document.createElement("button");rb.className="mrep";rb.textContent="⚠ Signaler";rb.onclick=function(){if(confirm("Signaler "+m.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:"report",n:m.n})};c.appendChild(rb)}
  d.appendChild(c);return d}
 function msrc(id){return (window.MED&&MED[id])||"/media/"+id}
