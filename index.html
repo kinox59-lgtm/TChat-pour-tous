@@ -178,14 +178,14 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <input id="file" type="file" accept="image/*" style="display:none">
  </aside>
  <div id="shade"></div>
- <div id="tour" class="mdl"><div class="card"><h3>Bienvenue sur Tchat Pour Tous 👋</h3><ol><li><b>Discute</b> dans un salon, ou touche une personne dans la liste pour lui écrire en <b>privé</b>.</li><li><b>Photos et vidéos</b> : bouton 📎 dans une conversation privée, une fois que l'autre t'a écrit.</li><li><b>Un souci ?</b> Appuie sur ⚠ : la personne est sanctionnée tout de suite.</li><li><b>Une idée ?</b> « 💡 Donner mon avis » dans la barre.</li></ol><div class="acts"><button class="btn" id="tourok" type="button">C'est parti !</button></div></div></div>
+ <div id="tour" class="mdl"><div class="card"><h3>Bienvenue sur Tchat Pour Tous 👋</h3><ol><li><b>Discute</b> dans un salon, ou touche une personne dans la liste pour lui écrire en <b>privé</b>.</li><li><b>Photos et vidéos</b> : bouton 📷 dans une conversation privée, une fois que l'autre t'a écrit.</li><li><b>Un souci ?</b> Appuie sur ⚠ : la personne est sanctionnée tout de suite.</li><li><b>Une idée ?</b> « 💡 Donner mon avis » dans la barre.</li></ol><div class="acts"><button class="btn" id="tourok" type="button">C'est parti !</button></div></div></div>
  <div id="safe" class="mdl"><div class="card"><h3>🛡️ Rencontrer en sécurité</h3><ul><li>Ne donne jamais ton adresse, ton lieu de travail ou tes infos bancaires.</li><li>Prends le temps de discuter ici avant de te voir.</li><li>Premier rendez-vous dans un <b>lieu public</b>, de préférence en journée.</li><li>Préviens un proche : où, avec qui, à quelle heure.</li><li>N'envoie jamais d'argent, même pour une histoire touchante.</li><li>Ne partage pas de photos que tu ne voudrais pas voir circuler.</li><li>Un comportement bizarre ? Signale avec ⚠ et coupe la discussion.</li></ul><div class="acts"><button class="btn" id="safeok" type="button">Compris</button></div></div></div>
  <div id="pf"><div class="card"><div id="pfi"></div><h3 id="pfn"></h3><p id="pft"></p><div class="acts"><button class="ghost" id="pfc" type="button">Fermer</button><button class="btn" id="pfm" type="button">✉ Écrire</button></div></div></div>
  <div id="fb"><div class="card"><h3>💡 Ton avis compte</h3><p>Dis-nous ce qui te plaît et ce qu'on peut améliorer pour les prochaines mises à jour.</p><select id="fbk"><option value="Idée">Une idée</option><option value="Problème">Un problème</option><option value="Compliment">Un compliment</option></select><textarea id="fbx" maxlength="500" rows="5" placeholder="Écris ici…"></textarea><div class="acts"><button class="ghost" id="fbc" type="button">Fermer</button><button class="btn" id="fbs" type="button">Envoyer</button></div><div id="fbm"></div></div></div>
  <section id="chat">
   <div id="top"><button id="menu">☰</button><div id="ttl"></div><button class="ghost" id="rep" style="display:none">⚠ Signaler</button></div>
   <div id="msgs"></div>
-  <form id="form"><button type="button" id="att" title="Envoyer une photo ou une vidéo" style="display:none">📎</button><input id="mf" type="file" accept="image/*,video/mp4,video/webm" style="display:none"><input id="txt" maxlength="300" autocomplete="off" placeholder="Écris un message…"><button id="snd" type="submit">➤</button></form>
+  <form id="form"><button type="button" id="att" title="Envoyer une photo ou une vidéo" style="display:none">📷</button><input id="mf" type="file" accept="image/*,video/mp4,video/webm" style="display:none"><input id="txt" maxlength="300" autocomplete="off" placeholder="Écris un message…"><button id="snd" type="submit">➤</button></form>
  </section>
 </div>
 
@@ -288,15 +288,15 @@ function connect(){
   if(m.t==="init"){ok=true;tries=0;me=m.n;myId=m.i;salons=m.salons;cur=m.s;salonMsgs=m.hist.slice();$("login").style.display="none";$("app").classList.add("show");
    $("st").textContent="● en ligne";if(!lsGet("tpt_tour")){$("tour").classList.add("show")}if(myPhoto)send({t:"avatar",d:myPhoto});renderMe();show(null);return}
   if(m.t==="online"){online=m.list;Object.keys(pms).forEach(function(k){var u=find(pms[k].n);if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}});renderMe();renderSalons();renderPeople();renderTop();return}
-if(m.t==="online_count" && $("#st")){$("#st").textContent = m.count+" en ligne";}                          
+  if(m.t==="online_count" && $("#st")){$("#st").textContent = m.count+" en ligne";}                          
   if(m.t==="salon"){cur=m.s;salonMsgs=m.hist.slice();salonUnread=0;renderSalons();renderTop();if(view===null){renderMsgs();$("txt").placeholder="Écris dans # "+cur+"…"}return}
   if(m.t==="sys"&&m.s===cur){addLive(salonMsgs,{sys:1,x:m.x},view===null);return}
-   if(m.t==="img" && m.s===cur){
+  if(m.t==="img" && m.s===cur){
       addLive(salonMsgs, { u: m.u, x: '<img src="'+m.x+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />' }, view==null);
-    }
-    if(m.t==="media" && m.s===cur){
+  }
+  if(m.t==="media" && m.s===cur){
       addLive(salonMsgs, { u: m.u, x: '<video src="'+m.x+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>' }, view==null);
-    }                       
+  }                       
   if(m.t==="msg"&&m.s===cur){addLive(salonMsgs,m,view===null);if(m.n!==me){beep();if(view!==null){salonUnread++;renderSalons();totalUnread()}}return}
   if(m.t==="pm"){var other=m.from===me?m.to:m.from,k=other.toLowerCase();
    if(!pms[k])pms[k]={n:other,msgs:[],unread:0};
@@ -340,11 +340,25 @@ $("pseudo").addEventListener("keydown",function(e){if(e.key==="Enter")$("go").cl
 $("chg").onclick=function(){$("file").click()};
 $("file").onchange=function(){var f=$("file").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;send({t:"avatar",d:d})}else alert("Image illisible.")});$("file").value=""};
 $("rm").onclick=function(){myPhoto=null;send({t:"avatar",d:null})};
+
+// Gestion propre unique du bouton 📷
 $("att").onclick=function(){$("mf").click()};
-$("mf").onchange=function(){var f=$("mf").files[0];$("mf").value="";if(!f||view===null)return;var to=pms[view].n,say=function(x){addLive(pms[view].msgs,{sys:1,x:x},true)};
- if(f.type.indexOf("image/")===0){say("Envoi de la photo…");bigImg(f,function(d){if(d)send({t:"media",to:to,k:"img",d:d});else say("Image illisible ou trop lourde.")})}
- else if(f.type==="video/mp4"||f.type==="video/webm"){if(f.size>3*1024*1024){say("Vidéo trop lourde : 3 Mo maximum (environ 15 secondes).");return}say("Envoi de la vidéo…");var fr=new FileReader();fr.onload=function(){send({t:"media",to:to,k:"vid",d:fr.result})};fr.readAsDataURL(f)}
- else say("Format non accepté : photo, vidéo MP4 ou WebM.")};
+$("mf").onchange=function(){var f=$("mf").files[0];$("mf").value="";if(!f)return;
+ var say=function(x){if(view===null)addLive(salonMsgs,{sys:1,x:x},true);else addLive(pms[view].msgs,{sys:1,x:x},true)};
+ if(f.type.indexOf("image/")===0){
+  say("Envoi de la photo…");
+  bigImg(f,function(d){if(d){if(view===null)send({t:"img",x:d});else send({t:"pm",to:pms[view].n,x:d,media:{k:"img"}});}else say("Image illisible ou trop lourde.")});
+ }
+ else if(f.type==="video/mp4"||f.type==="video/webm"){
+  if(f.size>3*1024*1024){say("Vidéo trop lourde : 3 Mo maximum.");return}
+  say("Envoi de la vidéo…");
+  var fr=new FileReader();
+  fr.onload=function(){if(view===null)send({t:"media",x:fr.result});else send({t:"pm",to:pms[view].n,x:fr.result,media:{k:"vid"}});};
+  fr.readAsDataURL(f);
+ }
+ else say("Format non accepté.");
+};
+
 $("tourok").onclick=function(){lsSet("tpt_tour","1");$("tour").classList.remove("show")};
 $("sfbtn").onclick=function(){closeSide();$("safe").classList.add("show")};
 $("safeok").onclick=function(){$("safe").classList.remove("show")};
@@ -360,93 +374,6 @@ $("shade").onclick=closeSide;
 $("rep").onclick=function(){if(view===null)return;var n=pms[view].n;if(confirm("Signaler "+n+" ?\nLa personne sera sanctionnée immédiatement.")){send({t:"report",n:n});addLive(pms[view].msgs,{sys:1,x:"Signalement envoyé."},true)}};
 $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if(!t||!ws||ws.readyState!==1)return;$("txt").value="";t=smileys(t);
  if(view===null)send({t:"msg",x:t});else send({t:"pm",to:pms[view].n,x:t})};
-})();
-(function(){
-  var txt = document.getElementById("txt");
-  if(!txt) return;
-
-  // 1. Bouton Émojis
-  var btn = document.createElement('button');
-  btn.type = 'button';
-  btn.innerHTML = '😊';
-  btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 6px;display:flex;align-items:center;justify-content:center;';
-
-  var picker = document.createElement('div');
-  picker.style.cssText = 'display:none;position:fixed;bottom:70px;right:20px;background:#1f2440;border:1px solid #2e3558;border-radius:8px;padding:8px;grid-template-columns:repeat(4,1fr);gap:6px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4);';
-
-  var emojis = ['😀','😂','😍','😎','👍','🔥','🎉','❤️','😉','🤔','🙈','✨'];
-  emojis.forEach(function(e){
-    var span = document.createElement('span');
-    span.innerHTML = e;
-    span.style.cssText = 'cursor:pointer;font-size:1.2rem;text-align:center;padding:4px;user-select:none;';
-    span.onclick = function(evt){
-      evt.stopPropagation();
-      txt.value += e;
-      txt.focus();
-      picker.style.display = 'none';
-    };
-    picker.appendChild(span);
-  });
-  document.body.appendChild(picker);
-
-  btn.onclick = function(e){
-    e.stopPropagation();
-    e.preventDefault();
-    picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
-  };
-  document.addEventListener('click', function(){ picker.style.display = 'none'; });
-
-
-  // 2. Bouton Fichier / Médias (Photo ou Vidéo)
-  var fileBtn = document.createElement('button');
-  fileBtn.type = 'button';
-  fileBtn.style.cssText = 'background:none;border:none;font-size:1.3rem;cursor:pointer;padding:0 6px;display:flex;align-items:center;justify-content:center;';
- fileBtn.innerHTML = '📷';
-
-  var fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*,video/*';
-  fileInput.style.display = 'none';
-
-  fileInput.onchange = function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-
-    var reader = new FileReader();
-    reader.onload = function(evt) {
-      var base64Data = evt.target.result;
-      var isVideo = file.type.startsWith('video');
-      
-      // Envoi du média via le WebSocket
-      if (typeof ws !== 'undefined' && ws && ws.readyState === 1) {
-        ws.send(JSON.stringify({
-          t: isVideo ? 'media' : 'img',
-          x: base64Data,
-          salon: typeof currentSalon !== 'undefined' ? currentSalon : 'Général'
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  document.body.appendChild(fileInput);
-
-  fileBtn.onclick = function(e){
-    e.stopPropagation();
-    e.preventDefault();
-    fileInput.click(); // Ouvre la sélection de fichier du téléphone ou du PC
-  };
- // 3. Insertion des boutons à côté du champ de texte
-  if(txt.parentNode) {
-    txt.parentNode.insertBefore(fileBtn, txt);
-    txt.parentNode.insertBefore(btn, txt);
-  }
-  // 4. Indicateur de frappe
-  txt.addEventListener("input", function() {
-    if (typeof ws !== 'undefined' && ws && ws.readyState === 1) {
-      ws.send(JSON.stringify({ t: 'typing' }));
-    }
-  });
 })();
 </script>
 </body>
