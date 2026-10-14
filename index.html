@@ -264,12 +264,18 @@ var num1 = Math.floor(Math.random() * 8) + 2;
 var num2 = Math.floor(Math.random() * 8) + 2;
 var expectedCaptcha = num1 + num2;
 
-window.addEventListener('DOMContentLoaded', function() {
+// Initialisation immédiate et sécurisée du label CAPTCHA
+function initCaptcha() {
     var lbl = $("captchalabel");
     if(lbl) {
         lbl.textContent = "🤖 Vérification humaine : combien font " + num1 + " + " + num2 + " ?";
     }
-});
+}
+if(document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCaptcha);
+} else {
+    initCaptcha();
+}
 
 (function(){
 var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false,lastSender=null;
@@ -577,7 +583,6 @@ $("contactform").onsubmit = function(e) {
     });
 };
 
-// Envoi d'images et vidéos universel (Salons publics et Messages privés)
 $("att").onclick = function() { $("mf").click(); };
 $("mf").onchange = function() {
     var file = $("mf").files[0];
