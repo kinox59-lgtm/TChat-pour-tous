@@ -360,10 +360,11 @@ $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if
   var txt = document.getElementById("txt");
   if(!txt) return;
 
+  // 1. Bouton Émojis
   var btn = document.createElement('button');
   btn.type = 'button';
   btn.innerHTML = '😊';
-  btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;';
+  btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 6px;display:flex;align-items:center;justify-content:center;';
 
   var picker = document.createElement('div');
   picker.style.cssText = 'display:none;position:fixed;bottom:70px;right:20px;background:#1f2440;border:1px solid #2e3558;border-radius:8px;padding:8px;grid-template-columns:repeat(4,1fr);gap:6px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4);';
@@ -381,7 +382,6 @@ $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if
     };
     picker.appendChild(span);
   });
-
   document.body.appendChild(picker);
 
   btn.onclick = function(e){
@@ -389,59 +389,62 @@ $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if
     e.preventDefault();
     picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
   };
-
   document.addEventListener('click', function(){ picker.style.display = 'none'; });
 
-  if(txt.parentNode) {
-    txt.parentNode.insertBefore(btn, txt);
-  }
- (function(){
-  var txt = document.getElementById("txt");
-  if(!txt) return;
 
-  var btn = document.createElement('button');
-  btn.type = 'button';
-  btn.innerHTML = '😊';
-  btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;';
+  // 2. Bouton Fichier / Médias (Photo ou Vidéo)
+  var fileBtn = document.createElement('button');
+  fileBtn.type = 'button';
+  fileBtn.innerHTML = '📎';
+  fileBtn.style.cssText = 'background:none;border:none;font-size:1.3rem;cursor:pointer;padding:0 6px;display:flex;align-items:center;justify-content:center;';
 
-  var picker = document.createElement('div');
-  picker.style.cssText = 'display:none;position:fixed;bottom:70px;right:20px;background:#1f2440;border:1px solid #2e3558;border-radius:8px;padding:8px;grid-template-columns:repeat(4,1fr);gap:6px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4);';
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*,video/*';
+  fileInput.style.display = 'none';
 
-  var emojis = ['😀','😂','😍','😎','👍','🔥','🎉','❤️','😉','🤔','🙈','✨'];
-  emojis.forEach(function(e){
-    var span = document.createElement('span');
-    span.innerHTML = e;
-    span.style.cssText = 'cursor:pointer;font-size:1.2rem;text-align:center;padding:4px;user-select:none;';
-    span.onclick = function(evt){
-      evt.stopPropagation();
-      txt.value += e;
-      txt.focus();
-      picker.style.display = 'none';
+  fileInput.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(evt) {
+      var base64Data = evt.target.result;
+      var isVideo = file.type.startsWith('video');
+      
+      // Envoi du média via le WebSocket
+      if (typeof ws !== 'undefined' && ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({
+          t: isVideo ? 'media' : 'img',
+          x: base64Data,
+          salon: typeof currentSalon !== 'undefined' ? currentSalon : 'Général'
+        }));
+      }
     };
-    picker.appendChild(span);
-  });
-
-  document.body.appendChild(picker);
-
-  btn.onclick = function(e){
-    e.stopPropagation();
-    e.preventDefault();
-    picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
+    reader.readAsDataURL(file);
   };
 
-  document.addEventListener('click', function(){ picker.style.display = 'none'; });
+  document.body.appendChild(fileInput);
 
+  fileBtn.onclick = function(e){
+    e.stopPropagation();
+    e.preventDefault();
+    fileInput.click(); // Ouvre la sélection de fichier du téléphone ou du PC
+  };
+
+
+  // 3. Insertion des boutons à côté du champ de texte
   if(txt.parentNode) {
+    txt.parentNode.insertBefore(fileBtn, txt);
     txt.parentNode.insertBefore(btn, txt);
   }
 
-  // --- Indicateur de frappe ---
+  // 4. Indicateur de frappe
   txt.addEventListener("input", function() {
     if (typeof ws !== 'undefined' && ws && ws.readyState === 1) {
       ws.send(JSON.stringify({ t: 'typing' }));
     }
   });
-})();
 })();
 </script>
 </body>
