@@ -221,14 +221,14 @@ wss.on("connection", (ws, req) => {
       return;
     }
 
-    if (m.t === "msg") {
-      const x = clean(m.x, 300);
+   if (m.t === "msg" || m.t === "img" || m.t === "media") {
+      const x = String(m.x || "").trim();
       if (!x) return;
       const now = Date.now();
       c.stamps = c.stamps.filter((t) => now - t < 5000);
       if (c.stamps.length >= 5) return send(ws, { t: "sys", s: c.s, x: "Doucement, tu écris trop vite !" });
       c.stamps.push(now);
-      const msg = { t: "msg", s: c.s, n: c.n, x, ts: now, i: c.id, p: c.av };
+      const msg = { t: m.t, s: c.s, n: c.n, x, ts: now, i: c.id, p: c.av };
       hist[c.s].push(msg);
       if (hist[c.s].length > HIST_MAX) hist[c.s].shift();
       toSalon(c.s, msg);
