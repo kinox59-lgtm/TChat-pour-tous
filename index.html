@@ -288,8 +288,7 @@ function connect(){
   if(m.t==="init"){ok=true;tries=0;me=m.n;myId=m.i;salons=m.salons;cur=m.s;salonMsgs=m.hist.slice();$("login").style.display="none";$("app").classList.add("show");
    $("st").textContent="● en ligne";if(!lsGet("tpt_tour")){$("tour").classList.add("show")}if(myPhoto)send({t:"avatar",d:myPhoto});renderMe();show(null);return}
   if(m.t==="online"){online=m.list;Object.keys(pms).forEach(function(k){var u=find(pms[k].n);if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}});renderMe();renderSalons();renderPeople();renderTop();return}
-                          if(m.t==="online_count"){$("#st").textContent="● "+m.count+" en ligne";}
-                          
+if(m.t==="online_count" && $("#st")){$("#st").textContent = m.count+" en ligne";}                          
   if(m.t==="salon"){cur=m.s;salonMsgs=m.hist.slice();salonUnread=0;renderSalons();renderTop();if(view===null){renderMsgs();$("txt").placeholder="Écris dans # "+cur+"…"}return}
   if(m.t==="sys"&&m.s===cur){addLive(salonMsgs,{sys:1,x:m.x},view===null);return}
    if(m.t==="img" && m.s===cur){
