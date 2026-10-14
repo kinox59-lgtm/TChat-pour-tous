@@ -17,9 +17,9 @@ const HIST_MAX = 40;
 
 // --- Règles de sanction ---------------------------------------------------
 const DURATIONS = [15 * 60e3, 30 * 60e3, 24 * 3600e3]; // 1er, 2e, 3e signalement
-// 4e sanction et suivantes : bannissement définitif
+// 4e sanction et supérieures : bannissement définitif
 const WINDOW = 2 * 60e3;       // fenêtre « en même temps »
-const PERMA_REPORTERS = 3;     // 3 personnes différentes (plus de deux) dans la fenêtre => à vie
+const PERMA_REPORTERS = 3;     // 3 personnes différentes dans la fenêtre => à vie
 const MIN_SEEN = 20e3;         // il faut être connecté 20 s pour signaler
 const MAX_REPORTS_PER_MIN = 5; // par personne
 
@@ -68,7 +68,6 @@ const human = (ms) => {
 };
 
 // --- Outils ---------------------------------------------------------------
-// Les fichiers du site sont dans "public" ; à défaut (envoi à plat depuis un téléphone), à côté de server.js
 const PUB = fs.existsSync(path.join(__dirname, "public")) ? path.join(__dirname, "public") : __dirname;
 const STATIC = {};
 for (const [u, f, ty] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/apple-touch-icon.png", "apple-touch-icon.png", "image/png"]]) {
@@ -118,7 +117,6 @@ const wss = new WebSocketServer({ server, maxPayload: 5000000 });
 const clean = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
 const send = (ws, o) => { if (ws.readyState === 1) ws.send(JSON.stringify(o)); };
 const toSalon = (s, o) => { for (const [ws, c] of clients) if (c.s === s) send(ws, o); };
-const users = (s) => [...clients.values()].filter((c) => c.s === s).map((c) => ({ n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av }));
 let ot = null;
 const pushOnline = () => {
   if (ot) return;
@@ -187,7 +185,6 @@ wss.on("connection", (ws, req) => {
 
   ws.on("message", (raw) => {
     let m; try { m = JSON.parse(raw);} catch { return; }
-    console.log("Message brut reçu :", raw.toString());
 
     if (!m || (m.t !== "avatar" && m.t !== "media" && raw.length > 2048)) return;
     const c = clients.get(ws);
@@ -205,9 +202,9 @@ wss.on("connection", (ws, req) => {
       send(ws, { t: "init", i: me.id, n: me.n, salons: SALONS, s: me.s, hist: hist[me.s] });
       sys(me.s, me.n + " est entré(e) dans le salon");
       pushUsers(me.s);
-          wss.clients.forEach(client => {
-      if (client.readyState === 1) send(client, { t: "online_count", count: clients.size });
-    });
+      wss.clients.forEach(client => {
+        if (client.readyState === 1) send(client, { t: "online_count", count: clients.size });
+      });
       return;
     }
     if (!c) return;
@@ -221,7 +218,7 @@ wss.on("connection", (ws, req) => {
       return;
     }
 
-   if (m.t === "msg" || m.t === "img" || m.t === "media") {
+    if (m.t === "msg" || m.t === "img" || m.t === "media") {
       const x = String(m.x || "").trim();
       if (!x) return;
       const now = Date.now();
@@ -305,57 +302,4 @@ wss.on("connection", (ws, req) => {
       if (!x || !to) return;
       if (to === c.n.toLowerCase()) return;
       const now = Date.now();
-      c.stamps = c.stamps.filter((t) => now - t < 5000);
-      if (c.stamps.length >= 5) return send(ws, { t: "pmerr", to: m.to, x: "Doucement, tu écris trop vite !" });
-      let dest = null;
-      for (const [dws, o] of clients) if (o.n.toLowerCase() === to) { dest = [dws, o]; break; }
-      if (!dest) return send(ws, { t: "pmerr", to: m.to, x: clean(m.to, 16) + " n'est plus connecté(e)." });
-      c.stamps.push(now);
-      c.sentTo.add(dest[1].id);
-      const pm = { t: "pm", from: c.n, to: dest[1].n, x, ts: now, fid: c.id, fp: c.av };
-      send(dest[0], pm);
-      send(ws, pm);
-      return;
-    }
-
-    if (m.t === "report") {
-      const say = (x) => send(ws, { t: "sys", s: c.s, x });
-      const now = Date.now();
-      if (now - c.since < MIN_SEEN) return say("Patiente quelques secondes avant de pouvoir signaler.");
-      c.reps = c.reps.filter((t) => now - t < 60e3);
-      if (c.reps.length >= MAX_REPORTS_PER_MIN) return say("Trop de signalements d'affilée, patiente un instant.");
-
-      const name = clean(m.n, 16).toLowerCase();
-      let tKey = null, tName = "";
-      for (const o of clients.values()) if (o.n.toLowerCase() === name) { tKey = o.key; tName = o.n; break; }
-      if (!tKey) for (const [k, r] of recent) if (now - r.at <= WINDOW && r.name.toLowerCase() === name) { tKey = k; tName = r.name; break; }
-      if (!tKey) return say("Utilisateur introuvable.");
-      if (tKey === c.key) return say("Tu ne peux pas te signaler toi-même.");
-
-      c.reps.push(now);
-      const res = sanction(tKey, tName, c.key);
-      say(res === "already" ? "Cette personne a déjà été sanctionnée. Merci !" : "Signalement pris en compte, la personne a été sanctionnée. Merci !");
-    }
-  });
-
-  ws.on("close", () => {
-    const c = clients.get(ws);
-    if (!c) return;
-    clients.delete(ws);
-    avatars.delete(c.id);
-    sys(c.s, c.n + " a quitté le tchat");
-    pushUsers(c.s);
-  });
-});
-
-setInterval(() => {
-  for (const ws of wss.clients) {
-    if (!ws.alive) { ws.terminate(); continue; }
-    ws.alive = false; ws.ping();
-  }
-  const now = Date.now();
-  for (const [k, r] of recent) if (now - r.at > WINDOW) recent.delete(k);
-  for (const [id, f] of media) if (now - f.at > MEDIA_TTL) mediaDel(id);
-}, 30000);
-
-server.listen(PORT, () => console.log("Tchat Pour Tous sur http://localhost:" + PORT));
+      c.stamps = c.stamps.filter((t) => now - t < 50
