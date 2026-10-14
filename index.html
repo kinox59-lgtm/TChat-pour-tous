@@ -189,7 +189,6 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
  <div id="pf"><div class="card"><div id="pfi"></div><h3 id="pfn"></h3><p id="pft"></p><div class="acts"><button class="ghost" id="pfc" type="button">Fermer</button><button class="btn" id="pfm" type="button">✉ Écrire</button></div></div></div>
  <div id="fb"><div class="card"><h3>💡 Ton avis compte</h3><p>Dis-nous ce qui te plaît et ce qu'on peut améliorer pour les prochaines mises à jour.</p><select id="fbk"><option value="Idée">Une idée</option><option value="Problème">Un problème</option><option value="Compliment">Un compliment</option></select><textarea id="fbx" maxlength="500" rows="5" placeholder="Écris ici…"></textarea><div class="acts"><button class="ghost" id="fbc" type="button">Fermer</button><button class="btn" id="fbs" type="button">Envoyer</button></div><div id="fbm"></div></div></div>
  
- <!-- Fenêtre modale de contact connectée à Web3Forms -->
  <div id="contactmodal" class="mdl">
   <div class="card">
    <h3>✉️ Contact & Support</h3>
@@ -283,7 +282,26 @@ function mediaEl(m,mine){var w=document.createElement("div");w.className="mbox";
  else{var play=function(){w.textContent="";w.classList.remove("vcard");var v=document.createElement("video");v.src=msrc(md.id);v.controls=true;v.setAttribute("playsinline","");v.preload="metadata";w.appendChild(v);try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(){})}catch(e){}};
   if(mine)play();else{w.classList.add("vcard");w.textContent="🎞 Vidéo reçue\nAppuyer pour lire";w.onclick=function(){w.onclick=null;play()}}}
  return w}
-function bigImg(file,cb){var fr=new FileReader();fr.onload=function(){var img=new Image();img.onload=function(){var sc=Math.min(1,1024/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext("2d").drawImage(img,0,0,c.width,c.height);var q=.75,d=c.toDataURL("image/jpeg",q);while(d.length>900000&&q>.25){q-=.1;d=c.toDataURL("image/jpeg",q)}cb(d.length>900000?null:d)};img.onerror=function(){cb(null)};img.src=fr.result};fr.onerror=function(){cb(null)};fr.readAsDataURL(file)}
+
+// Compression d'image optimisée pour éviter tout blocage WebSocket
+function bigImg(file,cb){
+ var fr=new FileReader();
+ fr.onload=function(){
+  var img=new Image();
+  img.onload=function(){
+   var sc=Math.min(1, 800/Math.max(img.width,img.height)),c=document.createElement("canvas");
+   c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+   c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+   var q=.6,d=c.toDataURL("image/jpeg",q);
+   cb(d);
+  };
+  img.onerror=function(){cb(null)};
+  img.src=fr.result
+ };
+ fr.onerror=function(){cb(null)};
+ fr.readAsDataURL(file)
+}
+
 function list(){return view===null?salonMsgs:(pms[view]?pms[view].msgs:[])}
 function renderMsgs(){var b=$("msgs");b.textContent="";list().forEach(function(m){b.appendChild(row(m))});b.scrollTop=b.scrollHeight}
 function addLive(arr,m,show){arr.push(m);if(arr.length>200)arr.shift();
@@ -407,7 +425,7 @@ $("chg").onclick=function(){$("file").click()};
 $("file").onchange=function(){var f=$("file").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;send({t:"avatar",d:d})}else alert("Image illisible.")});$("file").value=""};
 $("rm").onclick=function(){myPhoto=null;send({t:"avatar",d:null})};
 
-// Gestion du compteur de caractères en temps réel
+// Compteur de caractères
 $("txt").oninput = function() {
     var len = $("txt").value.length;
     var counter = $("char-count");
@@ -424,7 +442,7 @@ $("txt").oninput = function() {
     }
 };
 
-// Gestion du formulaire de contact via Web3Forms (votre e-mail reste totalement masqué)
+// Formulaire de contact via Web3Forms
 $("contactbtn").onclick = function() { closeSide(); $("contactmodal").classList.add("show"); };
 $("contactc").onclick = function() { $("contactmodal").classList.remove("show"); };
 $("contactmodal").onclick = function(e) { if (e.target === $("contactmodal")) $("contactmodal").classList.remove("show"); };
@@ -471,22 +489,27 @@ $("contactform").onsubmit = function(e) {
     });
 };
 
-// Gestion propre unique du bouton 📷
+// Envoi d'images et vidéos réparé
 $("att").onclick=function(){$("mf").click()};
-$("mf").onchange=function(){var f=$("mf").files[0];$("mf").value="";if(!f)return;
- var say=function(x){if(view===null)addLive(salonMsgs,{sys:1,x:x},true);else addLive(pms[view].msgs,{sys:1,x:x},true)};
+$("mf").onchange=function(){
+ var f=$("mf").files[0];$("mf").value="";if(!f)return;
  if(f.type.indexOf("image/")===0){
-  say("Envoi de la photo…");
-  bigImg(f,function(d){if(d){if(view===null)send({t:"img",x:d});else send({t:"pm",to:pms[view].n,x:d,media:{k:"img"}});}else say("Image illisible ou trop lourde.")});
+  bigImg(f,function(d){
+   if(d){
+    if(view===null) send({t:"msg",x:'<img src="'+d+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />'});
+    else send({t:"pm",to:pms[view].n,x:'<img src="'+d+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />',media:{k:"img"}});
+   } else alert("Image trop lourde ou illisible.");
+  });
  }
  else if(f.type==="video/mp4"||f.type==="video/webm"){
-  if(f.size>3*1024*1024){say("Vidéo trop lourde : 3 Mo maximum.");return}
-  say("Envoi de la vidéo…");
+  if(f.size>3*1024*1024){alert("Vidéo trop lourde (3 Mo max).");return}
   var fr=new FileReader();
-  fr.onload=function(){if(view===null)send({t:"media",x:fr.result});else send({t:"pm",to:pms[view].n,x:fr.result,media:{k:"vid"}});};
+  fr.onload=function(){
+   if(view===null) send({t:"msg",x:'<video src="'+fr.result+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>'});
+   else send({t:"pm",to:pms[view].n,x:'<video src="'+fr.result+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>',media:{k:"vid"}});
+  };
   fr.readAsDataURL(f);
  }
- else say("Format non accepté.");
 };
 
 $("tourok").onclick=function(){lsSet("tpt_tour","1");$("tour").classList.remove("show")};
