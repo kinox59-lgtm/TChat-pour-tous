@@ -395,8 +395,8 @@ $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if
   // 2. Bouton Fichier / Médias (Photo ou Vidéo)
   var fileBtn = document.createElement('button');
   fileBtn.type = 'button';
-  fileBtn.innerHTML = '📎';
   fileBtn.style.cssText = 'background:none;border:none;font-size:1.3rem;cursor:pointer;padding:0 6px;display:flex;align-items:center;justify-content:center;';
+ fileBtn.innerHTML = '📷';
 
   var fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -431,14 +431,11 @@ $("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if
     e.preventDefault();
     fileInput.click(); // Ouvre la sélection de fichier du téléphone ou du PC
   };
-
-
-  // 3. Insertion des boutons à côté du champ de texte
+ // 3. Insertion des boutons à côté du champ de texte
   if(txt.parentNode) {
     txt.parentNode.insertBefore(fileBtn, txt);
     txt.parentNode.insertBefore(btn, txt);
   }
-
   // 4. Indicateur de frappe
   txt.addEventListener("input", function() {
     if (typeof ws !== 'undefined' && ws && ws.readyState === 1) {
