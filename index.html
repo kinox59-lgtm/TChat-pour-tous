@@ -227,7 +227,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 <script>
 (function(){
 var $=function(i){return document.getElementById(i)};
-var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false;
+var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false,lastSender=null;
 var soundEnabled = localStorage.getItem("tpt_sound") !== "off";
 
 function updateSoundUI() {
@@ -283,23 +283,24 @@ function mediaEl(m,mine){var w=document.createElement("div");w.className="mbox";
   if(mine)play();else{w.classList.add("vcard");w.textContent="🎞 Vidéo reçue\nAppuyer pour lire";w.onclick=function(){w.onclick=null;play()}}}
  return w}
 
-// Compression d'image optimisée pour éviter tout blocage WebSocket
+// Envoi et compression d'image fiabilisés
 function bigImg(file,cb){
  var fr=new FileReader();
  fr.onload=function(){
   var img=new Image();
   img.onload=function(){
-   var sc=Math.min(1, 800/Math.max(img.width,img.height)),c=document.createElement("canvas");
+   var maxDim = 800;
+   var sc=Math.min(1, maxDim/Math.max(img.width,img.height)),c=document.createElement("canvas");
    c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-   var q=.6,d=c.toDataURL("image/jpeg",q);
+   var q=.65,d=c.toDataURL("image/jpeg",q);
    cb(d);
   };
   img.onerror=function(){cb(null)};
-  img.src=fr.result
+  img.src=fr.result;
  };
  fr.onerror=function(){cb(null)};
- fr.readAsDataURL(file)
+ fr.readAsDataURL(file);
 }
 
 function list(){return view===null?salonMsgs:(pms[view]?pms[view].msgs:[])}
@@ -308,9 +309,22 @@ function addLive(arr,m,show){arr.push(m);if(arr.length>200)arr.shift();
  if(show){var b=$("msgs"),near=b.scrollHeight-b.scrollTop-b.clientHeight<80;b.appendChild(row(m));while(b.children.length>200)b.removeChild(b.firstChild);if(near||m.n===me)b.scrollTop=b.scrollHeight}}
 function totalUnread(){var n=salonUnread;Object.keys(pms).forEach(function(k){n+=pms[k].unread});document.title=(n?"("+n+") ":"")+"Coco Tchat"}
 
+// Entête dynamiquement mis à jour avec le dernier expéditeur
 function renderTop(){var t=$("ttl");t.textContent="";
- if(view===null){var h=document.createElement("div");var a=document.createElement("div");a.className="h";a.textContent="# "+cur;var s=document.createElement("span");s.className="sub";s.textContent=online.filter(function(u){return u.s===cur}).length+" dans ce salon";h.appendChild(a);h.appendChild(s);t.appendChild(h);$("rep").style.display="none"}
- else{var p=pms[view],u=find(p.n);t.appendChild(av(p.n,u?u.i:p.i,u?u.p:p.p,36));var h2=document.createElement("div");var a2=document.createElement("div");a2.className="h";a2.textContent=p.n;var s2=document.createElement("span");s2.className="sub";s2.textContent=u?"🔒 conversation privée":"hors ligne";h2.appendChild(a2);h2.appendChild(s2);t.appendChild(h2);$("rep").style.display=u?"":"none"}}
+ if(view===null){
+  var h=document.createElement("div");var a=document.createElement("div");a.className="h";
+  a.textContent=lastSender?"💬 Dernier message de : "+lastSender:"# "+cur;
+  var s=document.createElement("span");s.className="sub";s.textContent=online.filter(function(u){return u.s===cur}).length+" dans ce salon";
+  h.appendChild(a);h.appendChild(s);t.appendChild(h);$("rep").style.display="none";
+ }
+ else{
+  var p=pms[view],u=find(p.n);t.appendChild(av(p.n,u?u.i:p.i,u?u.p:p.p,36));
+  var h2=document.createElement("div");var a2=document.createElement("div");a2.className="h";a2.textContent=p.n;
+  var s2=document.createElement("span");s2.className="sub";s2.textContent=u?"🔒 conversation privée":"hors ligne";
+  h2.appendChild(a2);h2.appendChild(s2);t.appendChild(h2);$("rep").style.display=u?"":"none";
+ }
+}
+
 function renderSalons(){var b=$("salons");b.textContent="";
  salons.forEach(function(s){var d=document.createElement("div");d.className="item"+(s===cur&&view===null?" on":"");
   var t=document.createElement("div");t.className="tx nmx";t.textContent="# "+s;d.appendChild(t);
@@ -370,16 +384,10 @@ function connect(){
   if(m.t==="online_count" && $("#st")){$("#st").textContent = m.count+" en ligne";}                          
   if(m.t==="salon"){cur=m.s;salonMsgs=m.hist.slice();salonUnread=0;renderSalons();renderTop();if(view===null){renderMsgs();$("txt").placeholder="Écris dans # "+cur+"…"}return}
   if(m.t==="sys"&&m.s===cur){addLive(salonMsgs,{sys:1,x:m.x},view===null);return}
-  if(m.t==="img" && m.s===cur){
-      addLive(salonMsgs, { u: m.u, x: '<img src="'+m.x+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />' }, view==null);
-  }
-  if(m.t==="media" && m.s===cur){
-      addLive(salonMsgs, { u: m.u, x: '<video src="'+m.x+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>' }, view==null);
-  }                       
-  if(m.t==="msg"&&m.s===cur){addLive(salonMsgs,m,view===null);if(m.n!==me){beep();if(view!==null){salonUnread++;renderSalons();totalUnread()}}return}
+  if(m.t==="msg"&&m.s===cur){addLive(salonMsgs,m,view===null);if(m.n!==me){beep();lastSender=m.n;renderTop();if(view!==null){salonUnread++;renderSalons();totalUnread()}}return}
   if(m.t==="pm"){var other=m.from===me?m.to:m.from,k=other.toLowerCase();
    if(!pms[k])pms[k]={n:other,msgs:[],unread:0};
-   if(m.from!==me){pms[k].i=m.fid;pms[k].p=m.fp}
+   if(m.from!==me){pms[k].i=m.fid;pms[k].p=m.fp;lastSender=m.from;renderTop();}
    var now=view===k;addLive(pms[k].msgs,{n:m.from,x:m.x,ts:m.ts,i:m.fid,p:m.fp,media:m.media},now);
    if(m.from===me&&!now){show(k)}else{if(m.from!==me){beep();if(!now)pms[k].unread++}renderPeople();totalUnread()}return}
   if(m.t==="fbok"){$("fbm").style.color="var(--ok)";$("fbm").textContent="Merci ! Ton avis a bien été envoyé 🙏";$("fbx").value="";setTimeout(function(){$("fb").classList.remove("show");$("fbm").textContent=""},1600);return}
@@ -442,7 +450,7 @@ $("txt").oninput = function() {
     }
 };
 
-// Formulaire de contact via Web3Forms
+// Formulaire de contact Web3Forms (masqué)
 $("contactbtn").onclick = function() { closeSide(); $("contactmodal").classList.add("show"); };
 $("contactc").onclick = function() { $("contactmodal").classList.remove("show"); };
 $("contactmodal").onclick = function(e) { if (e.target === $("contactmodal")) $("contactmodal").classList.remove("show"); };
@@ -489,27 +497,39 @@ $("contactform").onsubmit = function(e) {
     });
 };
 
-// Envoi d'images et vidéos réparé
+// Gestionnaires d'envoi de fichier photo/vidéo direct
 $("att").onclick=function(){$("mf").click()};
 $("mf").onchange=function(){
- var f=$("mf").files[0];$("mf").value="";if(!f)return;
+ var f=$("mf").files[0];
+ if(!f) return;
+ 
+ var say=function(x){
+  if(view===null) addLive(salonMsgs,{sys:1,x:x},true);
+  else addLive(pms[view].msgs,{sys:1,x:x},true);
+ };
+ 
  if(f.type.indexOf("image/")===0){
+  say("Envoi de la photo…");
   bigImg(f,function(d){
    if(d){
-    if(view===null) send({t:"msg",x:'<img src="'+d+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />'});
-    else send({t:"pm",to:pms[view].n,x:'<img src="'+d+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />',media:{k:"img"}});
-   } else alert("Image trop lourde ou illisible.");
+    var imgTag = '<img src="'+d+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />';
+    if(view===null) send({t:"msg",x:imgTag});
+    else send({t:"pm",to:pms[view].n,x:imgTag,media:{k:"img"}});
+   } else say("Image trop lourde ou illisible.");
   });
  }
  else if(f.type==="video/mp4"||f.type==="video/webm"){
-  if(f.size>3*1024*1024){alert("Vidéo trop lourde (3 Mo max).");return}
+  if(f.size>3*1024*1024){say("Vidéo trop lourde (3 Mo max)."); return}
+  say("Envoi de la vidéo…");
   var fr=new FileReader();
   fr.onload=function(){
-   if(view===null) send({t:"msg",x:'<video src="'+fr.result+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>'});
-   else send({t:"pm",to:pms[view].n,x:'<video src="'+fr.result+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>',media:{k:"vid"}});
+   var vidTag = '<video src="'+fr.result+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>';
+   if(view===null) send({t:"msg",x:vidTag});
+   else send({t:"pm",to:pms[view].n,x:vidTag,media:{k:"vid"}});
   };
   fr.readAsDataURL(f);
  }
+ $("mf").value="";
 };
 
 $("tourok").onclick=function(){lsSet("tpt_tour","1");$("tour").classList.remove("show")};
