@@ -249,12 +249,12 @@ function renderPeople(){var box=$("people"),q=$("q").value.trim().toLowerCase();
  var srt=function(a,b){return ur(b)-ur(a)||a.n.localeCompare(b.n)};
  var gk=function(u){return u.sx==="F"?"F":u.sx==="H"?"H":u.sx==="T"?"T":"X"};
  var groups=[["F","♀ Filles"],["H","♂ Garçons"],["T","⚧ Transgenres"],["X","Autres"]],any=false;
- groups.forEach(function(g){if((filt==="F"||filt==="H")&&filt!==g[0])return;var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
+ groups.forEach(function(g){if((filt==="F"||filt===H)&&filt!==g[0])return;var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
   var h=document.createElement("div");h.className="sec2 "+g[0];var a1=document.createElement("span");a1.textContent=g[1];var c1=document.createElement("span");c1.textContent=l.length;h.appendChild(a1);h.appendChild(c1);box.appendChild(h);
   l.forEach(function(u){box.appendChild(mkRow(u,true,ur(u)))})});
  if(filt==="all"){var ol=offs.filter(ok2).sort(srt);if(ol.length){any=true;var h2=document.createElement("div");h2.className="sec2 O";h2.textContent="Conversations (hors ligne)";box.appendChild(h2);ol.forEach(function(u){box.appendChild(mkRow(u,false,ur(u)))})}}
  if(!any){var e=document.createElement("div");e.className="sub";e.style.padding="10px 18px";e.textContent=q?"Personne trouvé":"Personne pour l'instant";box.appendChild(e)}}
-var CHL={"H":"un homme","F":"une femme","HF":"les deux","T":"une personne trans"},OL={"hetero":"hétéro","homo":"homo","bi":"bi","autre":"autre orientation"};
+var CHL={"H":"un homme","F":"une femme","HF":"les deux","T":"uma personne trans"},OL={"hetero":"hétéro","homo":"homo","bi":"bi","autre":"autre orientation"};
 function matchMe(u){var c=creds&&creds.c;if(!c)return true;if(c==="T")return u.sx==="T";return c.indexOf(u.sx)>=0}
 function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d.className="item"+(view===k?" on":"");
  var aw=avd(u.n,u.i,u.p,48,on,u.sx);aw.onclick=function(e){e.stopPropagation();openProfile(u.n)};d.appendChild(aw);
