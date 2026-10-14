@@ -299,7 +299,8 @@ function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d
  if(on&&(u.c||u.o)){var s2=document.createElement("div");s2.className="sub";s2.textContent="🔎 "+[u.c?"cherche "+CHL[u.c]:"",u.o?OL[u.o]:""].filter(Boolean).join(" · ");t.appendChild(s2)}
  d.appendChild(t);
  if(n){var b=document.createElement("span");b.className="badge";b.textContent=n;d.appendChild(b)}
- if(on){var f=document.createElement("button");f.className="flag";f.textContent="⚠";f.title="Signaler";f.onclick=function(e){e.stopPropagation();if(confirm("Signaler "+u.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:"report",n:u.n})};d.appendChild(f)}
+ if(!on){var rmBtn=document.createElement("button");rmBtn.className="flag";rmBtn.textContent="✕";rmBtn.title="Fermer la conversation";rmBtn.onclick=function(e){e.stopPropagation();if(confirm("Fermer la conversation avec "+u.n+" ? L'historique sera effacé.")) { delete pms[k]; if(view===k) show(null); else renderPeople(); totalUnread(); }};d.appendChild(rmBtn);}
+ else {var f=document.createElement("button");f.className="flag";f.textContent="⚠";f.title="Signaler";f.onclick=function(e){e.stopPropagation();if(confirm("Signaler "+u.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:"report",n:u.n})};d.appendChild(f)}
  d.onclick=function(){openPm(u.n);closeSide()};return d}
 function openProfile(name){var k=String(name).toLowerCase(),u=find(name),pm=pms[k];if(!u&&!pm)return;var p=u||{n:name,i:pm.i,p:pm.p};
  var w=$("pfi");w.textContent="";var a=av(p.n,p.i,p.p,220);a.style.borderRadius="22px";w.appendChild(a);$("pfn").textContent=p.n;
