@@ -1,4 +1,4 @@
-// Tchat Pour Tous – serveur Node.js (HTTP + WebSocket). Aucune inscription.
+// Coco Tchat – serveur Node.js (HTTP + WebSocket). Aucune inscription.
 // Inclut le signalement avec bannissements progressifs.
 const http = require("http");
 const fs = require("fs");
@@ -17,7 +17,6 @@ const HIST_MAX = 40;
 
 // --- Règles de sanction ---------------------------------------------------
 const DURATIONS = [15 * 60e3, 30 * 60e3, 24 * 3600e3]; // 1er, 2e, 3e signalement
-// 4e sanction et supérieures : bannissement définitif
 const WINDOW = 2 * 60e3;       // fenêtre « en même temps »
 const PERMA_REPORTERS = 3;     // 3 personnes différentes dans la fenêtre => à vie
 const MIN_SEEN = 20e3;         // il faut être connecté 20 s pour signaler
@@ -302,4 +301,57 @@ wss.on("connection", (ws, req) => {
       if (!x || !to) return;
       if (to === c.n.toLowerCase()) return;
       const now = Date.now();
-      c.stamps = c.stamps.filter((t) => now - t < 50
+      c.stamps = c.stamps.filter((t) => now - t < 5000);
+      if (c.stamps.length >= 5) return send(ws, { t: "pmerr", to: m.to, x: "Doucement, tu écris trop vite !" });
+      let dest = null;
+      for (const [dws, o] of clients) if (o.n.toLowerCase() === to) { dest = [dws, o]; break; }
+      if (!dest) return send(ws, { t: "pmerr", to: m.to, x: clean(m.to, 16) + " n'est plus connecté(e)." });
+      c.stamps.push(now);
+      c.sentTo.add(dest[1].id);
+      const pm = { t: "pm", from: c.n, to: dest[1].n, x, ts: now, fid: c.id, fp: c.av };
+      send(dest[0], pm);
+      send(ws, pm);
+      return;
+    }
+
+    if (m.t === "report") {
+      const say = (x) => send(ws, { t: "sys", s: c.s, x });
+      const now = Date.now();
+      if (now - c.since < MIN_SEEN) return say("Patiente quelques secondes avant de pouvoir signaler.");
+      c.reps = c.reps.filter((t) => now - t < 60e3);
+      if (c.reps.length >= MAX_REPORTS_PER_MIN) return say("Trop de signalements d'affilée, patiente un instant.");
+
+      const name = clean(m.n, 16).toLowerCase();
+      let tKey = null, tName = "";
+      for (const o of clients.values()) if (o.n.toLowerCase() === name) { tKey = o.key; tName = o.n; break; }
+      if (!tKey) for (const [k, r] of recent) if (now - r.at <= WINDOW && r.name.toLowerCase() === name) { tKey = k; tName = r.name; break; }
+      if (!tKey) return say("Utilisateur introuvable.");
+      if (tKey === c.key) return say("Tu ne peux pas te signaler toi-même.");
+
+      c.reps.push(now);
+      const res = sanction(tKey, tName, c.key);
+      say(res === "already" ? "Cette personne a déjà été sanctionnée. Merci !" : "Signalement pris en compte, la personne a été sanctionnée. Merci !");
+    }
+  });
+
+  ws.on("close", () => {
+    const c = clients.get(ws);
+    if (!c) return;
+    clients.delete(ws);
+    avatars.delete(c.id);
+    sys(c.s, c.n + " a quitté le tchat");
+    pushUsers(c.s);
+  });
+});
+
+setInterval(() => {
+  for (const ws of wss.clients) {
+    if (!ws.alive) { ws.terminate(); continue; }
+    ws.alive = false; ws.ping();
+  }
+  const now = Date.now();
+  for (const [k, r] of recent) if (now - r.at > WINDOW) recent.delete(k);
+  for (const [id, f] of media) if (now - f.at > MEDIA_TTL) mediaDel(id);
+}, 30000);
+
+server.listen(PORT, () => console.log("Coco Tchat sur http://localhost:" + PORT));
