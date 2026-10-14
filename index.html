@@ -33,9 +33,9 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 .dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2px solid var(--surf)}
 .dot.off{background:#aab}
 .avw.F .av{box-shadow:0 0 0 2px #ff5fa2}.avw.H .av{box-shadow:0 0 0 2px #3b9cff}.avw.X .av{box-shadow:0 0 0 2px #a78bfa}
-.chips{display:flex;gap:6px;padding:0 8px 8px}
-.chip{flex:1;border:1px solid var(--line);background:none;border-radius:10px;padding:5px 2px;font-size:12px;cursor:pointer;color:var(--muted)}
-.chip.on{background:var(--g);color:#fff;border-color:transparent}
+.chips{display:flex;gap:4px;padding:0 8px 8px;flex-wrap:wrap}
+.chip{flex:1;min-width:60px;border:1px solid var(--line);background:none;border-radius:10px;padding:6px 2px;font-size:11px;cursor:pointer;color:var(--muted);text-align:center}
+.chip.on{background:var(--g);color:#fff;border-color:transparent;font-weight:bold}
 .sec2{padding:10px 16px 4px;font-size:12px;font-weight:700;display:flex;justify-content:space-between}
 .sec2.F{color:#ff5fa2}.sec2.H{color:#3b9cff}.sec2.X{color:#a78bfa}.sec2.O{color:var(--muted)}
 .avw.T .av{box-shadow:0 0 0 2px #f5a623}.sec2.T{color:#f5a623}
@@ -154,13 +154,32 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <div><label for="sexe">Sexe</label><select id="sexe"><option value="H">Homme</option><option value="F">Femme</option><option value="T">Transgenre</option><option value="Autre">Autre</option></select></div></div>
   <label for="ville">Ville</label><input id="ville" maxlength="20" placeholder="ex : Lyon">
   <label for="reg">Département (et région)</label><select id="reg"></select>
-  <div class="two"><div><label for="cher">Je cherche</label><select id="cher"><option value="">Peu importe</option><option value="H">Un homme</option><option value="F">Une femme</option><option value="HF">Les deux</option><option value="T">Une personne transgenre</option></select></div>
-  <div><label for="ori">Orientation</label><select id="ori"><option value="">Je ne précise pas</option><option value="hetero">Hétéro</option><option value="homo">Homo</option><option value="bi">Bi</option><option value="autre">Autre</option></select></div></div>
+  <div class="two">
+   <div>
+    <label for="cher">Je cherche</label>
+    <select id="cher">
+     <option value="">Peu importe</option>
+     <option value="H">Un homme</option>
+     <option value="F">Une femme</option>
+     <option value="HF">Les deux (HF)</option>
+     <option value="T">Une personne transgenre</option>
+    </select>
+   </div>
+   <div>
+    <label for="ori">Orientation</label>
+    <select id="ori">
+     <option value="">Je ne précise pas</option>
+     <option value="hetero">Hétéro</option>
+     <option value="homo">Homo</option>
+     <option value="bi">Bi</option>
+     <option value="autre">Autre</option>
+    </select>
+   </div>
+  </div>
   
   <label for="adminpwd" style="margin-top:14px; color:var(--a1);">🔒 Mot de passe Admin (optionnel)</label>
   <input id="adminpwd" type="password" placeholder="Laisser vide si visiteur" autocomplete="new-password">
 
-  <!-- Vérification anti-spam humaine -->
   <label for="captchaval" id="captchalabel" style="margin-top:14px; font-weight:600; color:var(--a1);">🤖 Vérification humaine : combien font ... ?</label>
   <input id="captchaval" type="number" placeholder="Votre réponse" autocomplete="off">
 
@@ -180,7 +199,17 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <div class="item" id="contactbtn"><div class="tx nmx">✉️ Contact & Support</div></div>
   <div class="item" id="soundbtn"><div class="tx nmx" id="soundtxt">🔊 Sons activés</div></div>
   <div class="sec"><span>En ligne</span><span id="cnt"></span></div>
-  <div class="chips" id="chips"><button class="chip on" data-f="all">Tous</button><button class="chip" data-f="F">♀ Filles</button><button class="chip" data-f="H">♂ Garçons</button><button class="chip" data-f="me">💘 Pour moi</button></div>
+  
+  <!-- Options de recherche / filtres pour le tchat -->
+  <div class="chips" id="chips">
+   <button class="chip on" data-f="all">🌐 Tous</button>
+   <button class="chip" data-f="F">♀ Filles</button>
+   <button class="chip" data-f="H">♂ Garçons</button>
+   <button class="chip" data-f="T">⚧ Trans</button>
+   <button class="chip" data-f="HF">👫 HF</button>
+   <button class="chip" data-f="me">💘 Pour moi</button>
+  </div>
+  
   <select id="rgf"></select>
   <div class="agef"><span>Âge</span><input id="amin" type="number" min="18" max="99" placeholder="18"><span>à</span><input id="amax" type="number" min="18" max="99" placeholder="99"></div>
   <input id="q" placeholder="🔍 Chercher quelqu'un…" autocomplete="off">
@@ -231,16 +260,21 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 </div>
 
 <script>
-(function(){
 var $=function(i){return document.getElementById(i)};
-var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false,lastSender=null;
-var soundEnabled = localStorage.getItem("tpt_sound") !== "off";
-
-// Génération d'une question anti-spam aléatoire au chargement
 var num1 = Math.floor(Math.random() * 8) + 2;
 var num2 = Math.floor(Math.random() * 8) + 2;
 var expectedCaptcha = num1 + num2;
-$("captchalabel").textContent = "🤖 Vérification humaine : combien font " + num1 + " + " + num2 + " ?";
+
+window.addEventListener('DOMContentLoaded', function() {
+    var lbl = $("captchalabel");
+    if(lbl) {
+        lbl.textContent = "🤖 Vérification humaine : combien font " + num1 + " + " + num2 + " ?";
+    }
+});
+
+(function(){
+var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false,lastSender=null;
+var soundEnabled = localStorage.getItem("tpt_sound") !== "off";
 
 function updateSoundUI() {
     $("soundtxt").textContent = soundEnabled ? "🔊 Sons activés" : "🔇 Sons coupés";
@@ -365,11 +399,21 @@ function renderPeople(){var box=$("people"),q=$("q").value.trim().toLowerCase();
  var srt=function(a,b){return ur(b)-ur(a)||a.n.localeCompare(b.n)};
  var gk=function(u){return u.sx==="F"?"F":u.sx==="H"?"H":u.sx==="T"?"T":"X"};
  var groups=[["F","♀ Filles"],["H","♂ Garçons"],["T","⚧ Transgenres"],["X","Autres"]],any=false;
- groups.forEach(function(g){if((filt==="F"||filt==="H")&&filt!==g[0])return;var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
+ 
+ groups.forEach(function(g){
+  if(filt==="F" && g[0]!=="F") return;
+  if(filt==="H" && g[0]!=="H") return;
+  if(filt==="T" && g[0]!=="T") return;
+  if(filt==="HF" && (g[0]!=="F" && g[0]!=="H")) return;
+  
+  var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
   var h=document.createElement("div");h.className="sec2 "+g[0];var a1=document.createElement("span");a1.textContent=g[1];var c1=document.createElement("span");c1.textContent=l.length;h.appendChild(a1);h.appendChild(c1);box.appendChild(h);
-  l.forEach(function(u){box.appendChild(mkRow(u,true,ur(u)))})});
+  l.forEach(function(u){box.appendChild(mkRow(u,true,ur(u)))})
+ });
+ 
  if(filt==="all"){var ol=offs.filter(ok2).sort(srt);if(ol.length){any=true;var h2=document.createElement("div");h2.className="sec2 O";h2.textContent="Conversations (hors ligne)";box.appendChild(h2);ol.forEach(function(u){box.appendChild(mkRow(u,false,ur(u)))})}}
  if(!any){var e=document.createElement("div");e.className="sub";e.style.padding="10px 18px";e.textContent=q?"Personne trouvé":"Personne pour l'instant";box.appendChild(e)}}
+
 var CHL={"H":"un homme","F":"une femme","HF":"les deux","T":"une personne trans"},OL={"hetero":"hétéro","homo":"homo","bi":"bi","autre":"autre orientation"};
 function matchMe(u){var c=creds&&creds.c;if(!c)return true;if(c==="T")return u.sx==="T";return c.indexOf(u.sx)>=0}
 function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d.className="item"+(view===k?" on":"");
@@ -433,6 +477,7 @@ DATA.forEach(function(g){var p=g.split("|");REGLIST.push(p[0]);p[1].split(",").f
  var f=$("rgf"),o2=document.createElement("option");o2.value="";o2.textContent="🌍 Toutes les régions";f.appendChild(o2);
  REGLIST.forEach(function(r){var x=document.createElement("option");x.textContent=r;f.appendChild(x)});f.onchange=renderPeople})();
 function locText(u){var p=[];if(u.v)p.push(u.v);if(u.d&&u.d!=="XX"&&DN[u.d])p.push(DN[u.d]+" ("+u.d+")");if(u.r&&!(u.d&&DN[u.d]===u.r))p.push(u.r);return p.join(" · ")}
+
 [].slice.call(document.querySelectorAll(".chip")).forEach(function(c){c.onclick=function(){filt=c.getAttribute("data-f");[].slice.call(document.querySelectorAll(".chip")).forEach(function(x){x.classList.toggle("on",x===c)});renderPeople()}});
 setPv();
 $("pic").onclick=function(){$("file0").click()};
@@ -445,11 +490,10 @@ $("go").onclick=function(){
  if(!p){$("pseudo").focus();return}
  var a=parseInt($("age").value,10);
  
- // Vérification de la réponse humaine
  var userAnswer = parseInt($("captchaval").value, 10);
  if (isNaN(userAnswer) || userAnswer !== expectedCaptcha) {
   $("err").textContent = "Vérification humaine incorrecte. Réessayez le calcul.";
-  $("captchaval"].focus?.();
+  $("captchaval").focus();
   return;
  }
 
