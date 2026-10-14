@@ -155,6 +155,11 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <label for="reg">Département (et région)</label><select id="reg"></select>
   <div class="two"><div><label for="cher">Je cherche</label><select id="cher"><option value="">Peu importe</option><option value="H">Un homme</option><option value="F">Une femme</option><option value="HF">Les deux</option><option value="T">Une personne transgenre</option></select></div>
   <div><label for="ori">Orientation</label><select id="ori"><option value="">Je ne précise pas</option><option value="hetero">Hétéro</option><option value="homo">Homo</option><option value="bi">Bi</option><option value="autre">Autre</option></select></div></div>
+  
+  <!-- Champ secret pour le mot de passe Admin -->
+  <label for="adminpwd" style="margin-top:14px; color:var(--a1);">🔒 Mot de passe Admin (optionnel)</label>
+  <input id="adminpwd" type="password" placeholder="Laisser vide si visiteur" autocomplete="new-password">
+
   <label class="chk"><input type="checkbox" id="adult"> J'ai 18 ans ou plus</label>
   <button class="btn" id="go">Entrer dans le tchat</button>
   <div id="err"></div>
@@ -175,7 +180,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <div class="agef"><span>Âge</span><input id="amin" type="number" min="18" max="99" placeholder="18"><span>à</span><input id="amax" type="number" min="18" max="99" placeholder="99"></div>
   <input id="q" placeholder="🔍 Chercher quelqu'un…" autocomplete="off">
   <div id="people"></div>
-  <div id="me"><div id="meav"></div><div class="tx"><div class="nmx" id="men" style="font-weight:600"></div><div class="sub">Mon profil</div></div><button class="ghost" id="chg">📷</button><button class="ghost" id="rm">✕</button></div>
+  <div id="me"><div id="meav"></div><div class="tx"><div class="nmx" id="men" style="font-weight:600"></div><div class="sub" id="msub">Mon profil</div></div><button class="ghost" id="chg">📷</button><button class="ghost" id="rm">✕</button></div>
   <input id="file" type="file" accept="image/*" style="display:none">
  </aside>
  <div id="shade"></div>
@@ -201,7 +206,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 <script>
 (function(){
 var $=function(i){return document.getElementById(i)};
-var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null;
+var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false;
 var soundEnabled = localStorage.getItem("tpt_sound") !== "off";
 
 function updateSoundUI() {
@@ -300,7 +305,7 @@ function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d
  d.appendChild(t);
  if(n){var b=document.createElement("span");b.className="badge";b.textContent=n;d.appendChild(b)}
  if(!on){var rmBtn=document.createElement("button");rmBtn.className="flag";rmBtn.textContent="✕";rmBtn.title="Fermer la conversation";rmBtn.onclick=function(e){e.stopPropagation();if(confirm("Fermer la conversation avec "+u.n+" ? L'historique sera effacé.")) { delete pms[k]; if(view===k) show(null); else renderPeople(); totalUnread(); }};d.appendChild(rmBtn);}
- else {var f=document.createElement("button");f.className="flag";f.textContent="⚠";f.title="Signaler";f.onclick=function(e){e.stopPropagation();if(confirm("Signaler "+u.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:"report",n:u.n})};d.appendChild(f)}
+ else {var f=document.createElement("button");f.className="flag";f.textContent=isAdmin?"🔨":"⚠";f.title=isAdmin?"Bannir (Admin)":"Signaler";f.onclick=function(e){e.stopPropagation();if(confirm((isAdmin?"Bannir ":"Signaler ")+u.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:isAdmin?"admin_ban":"report",n:u.n,pwd:creds.pwd})};d.appendChild(f)}
  d.onclick=function(){openPm(u.n);closeSide()};return d}
 function openProfile(name){var k=String(name).toLowerCase(),u=find(name),pm=pms[k];if(!u&&!pm)return;var p=u||{n:name,i:pm.i,p:pm.p};
  var w=$("pfi");w.textContent="";var a=av(p.n,p.i,p.p,220);a.style.borderRadius="22px";w.appendChild(a);$("pfn").textContent=p.n;
@@ -308,14 +313,14 @@ function openProfile(name){var k=String(name).toLowerCase(),u=find(name),pm=pms[
  var l2=u&&(u.c||u.o)?"\n🔎 "+[u.c?"cherche "+CHL[u.c]:"",u.o?OL[u.o]:""].filter(Boolean).join(" · "):"";
  $("pft").textContent=l1+l2;$("pfm").style.display=(p.n===me||!u)?"none":"";
  $("pfm").onclick=function(){$("pf").classList.remove("show");openPm(p.n)};$("pf").classList.add("show")}
-function renderMe(){var u=find(me),w=$("meav");w.textContent="";var mw=avd(me,myId,u?u.p:0,44,true,u?u.sx:"");mw.onclick=function(){openProfile(me)};w.appendChild(mw);$("men").textContent=me}
+function renderMe(){var u=find(me),w=$("meav");w.textContent="";var mw=avd(me,myId,u?u.p:0,44,true,u?u.sx:"");mw.onclick=function(){openProfile(me)};w.appendChild(mw);$("men").textContent=me;if(isAdmin)$("msub").textContent="👑 Administrateur";}
 function show(k){view=k;$("att").style.display=k===null?"none":"";if(k===null)salonUnread=0;else pms[k].unread=0;renderTop();renderMsgs();renderSalons();renderPeople();totalUnread();$("txt").placeholder=k===null?"Écris dans # "+cur+"…":"Message privé à "+pms[k].n+"…"}
 function openPm(name){var k=name.toLowerCase(),u=find(name);if(!pms[k])pms[k]={n:u?u.n:name,msgs:[],unread:0};if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}show(k);if(innerWidth>760)$("txt").focus()}
 function closeSide(){$("side").classList.remove("open")}
 
 function connect(){
  ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
- ws.onopen=function(){send({t:"join",n:creds.n,a:creds.a,sx:creds.sx,v:creds.v,d:creds.d,r:creds.r,c:creds.c,o:creds.o})};
+ ws.onopen=function(){send({t:"join",n:creds.n,a:creds.a,sx:creds.sx,v:creds.v,d:creds.d,r:creds.r,c:creds.c,o:creds.o,pwd:creds.pwd})};
  ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
   if(m.t==="err"){$("err").textContent=m.x;ws.close();return}
   if(m.t==="banned"){noRe=true;ok=false;$("app").classList.remove("show");$("login").style.display="";$("err").textContent=m.x;return}
@@ -364,11 +369,17 @@ $("go").onclick=function(){var p=$("pseudo").value.trim();if(!p){$("pseudo").foc
  var a=parseInt($("age").value,10);
  if(!$("adult").checked){$("err").textContent="Coche « J'ai 18 ans ou plus » pour entrer.";return}
  if(!(a>=18&&a<=99)){$("err").textContent="Entre ton âge (de 18 à 99 ans). Ce tchat est réservé aux adultes.";return}
- $("err").textContent="";creds={n:p,a:a,sx:$("sexe").value,v:$("ville").value.trim(),d:$("reg").value,r:DR[$("reg").value]||"",c:$("cher").value,o:$("ori").value};
+ $("err").textContent="";
+ 
+ var pwd=$("adminpwd").value.trim();
+ // Vérification spécifique avec ton pseudo et ton mot de passe
+ isAdmin = (p.toLowerCase() === "administrateur" && pwd === "1920459512582");
+ 
+ creds={n:p,a:a,sx:$("sexe").value,v:$("ville").value.trim(),d:$("reg").value,r:DR[$("reg").value]||"",c:$("cher").value,o:$("ori").value,pwd:pwd};
  lsSet("tpt",JSON.stringify({c:creds,ph:myPhoto}));connect()};
 $("rnd").onclick=function(){var A=["Panda","Koala","Comète","Étoile","Citron","Pixel","Tigre","Lune","Nuage","Soleil","Cactus","Dauphin"];$("pseudo").value=A[Math.floor(Math.random()*A.length)]+(10+Math.floor(Math.random()*990))};
 (function(){var sv=null;try{sv=JSON.parse(lsGet("tpt")||"null")}catch(e){}
- if(sv&&sv.c&&sv.c.n&&sv.c.a>=18){var r=$("resume");r.style.display="flex";var b=document.createElement("button");b.type="button";b.className="btn";b.textContent="⚡ Reprendre en tant que "+sv.c.n;b.onclick=function(){creds=sv.c;myPhoto=sv.ph||null;connect()};
+ if(sv&&sv.c&&sv.c.n&&sv.c.a>=18){var r=$("resume");r.style.display="flex";var b=document.createElement("button");b.type="button";b.className="btn";b.textContent="⚡ Reprendre en tant que "+sv.c.n;b.onclick=function(){creds=sv.c;myPhoto=sv.ph||null;isAdmin=(creds.n.toLowerCase()==="administrateur"&&creds.pwd==="1920459512582");connect()};
   var f=document.createElement("button");f.type="button";f.className="ghost";f.textContent="Oublier";f.onclick=function(){lsSet("tpt","");r.style.display="none"};r.appendChild(b);r.appendChild(f)}})();
 $("pseudo").addEventListener("keydown",function(e){if(e.key==="Enter")$("go").click()});
 $("chg").onclick=function(){$("file").click()};
