@@ -156,7 +156,6 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <div class="two"><div><label for="cher">Je cherche</label><select id="cher"><option value="">Peu importe</option><option value="H">Un homme</option><option value="F">Une femme</option><option value="HF">Les deux</option><option value="T">Une personne transgenre</option></select></div>
   <div><label for="ori">Orientation</label><select id="ori"><option value="">Je ne précise pas</option><option value="hetero">Hétéro</option><option value="homo">Homo</option><option value="bi">Bi</option><option value="autre">Autre</option></select></div></div>
   
-  <!-- Champ secret pour le mot de passe Admin -->
   <label for="adminpwd" style="margin-top:14px; color:var(--a1);">🔒 Mot de passe Admin (optionnel)</label>
   <input id="adminpwd" type="password" placeholder="Laisser vide si visiteur" autocomplete="new-password">
 
@@ -173,6 +172,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <div class="sec">Salons</div><div id="salons"></div>
   <div class="item" id="sfbtn"><div class="tx nmx">🛡️ Conseils de sécurité</div></div>
   <div class="item" id="fbbtn"><div class="tx nmx">💡 Donner mon avis</div></div>
+  <div class="item" id="contactbtn"><div class="tx nmx">✉️ Contact & Support</div></div>
   <div class="item" id="soundbtn"><div class="tx nmx" id="soundtxt">🔊 Sons activés</div></div>
   <div class="sec"><span>En ligne</span><span id="cnt"></span></div>
   <div class="chips" id="chips"><button class="chip on" data-f="all">Tous</button><button class="chip" data-f="F">♀ Filles</button><button class="chip" data-f="H">♂ Garçons</button><button class="chip" data-f="me">💘 Pour moi</button></div>
@@ -188,6 +188,28 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
  <div id="safe" class="mdl"><div class="card"><h3>🛡️ Rencontrer en sécurité</h3><ul><li>Ne donne jamais ton adresse, ton lieu de travail ou tes infos bancaires.</li><li>Prends le temps de discuter ici avant de te voir.</li><li>Premier rendez-vous dans un <b>lieu public</b>, de préférence en journée.</li><li>Préviens un proche : où, avec qui, à quelle heure.</li><li>N'envoie jamais d'argent, même pour une histoire touchante.</li><li>Ne partage pas de photos que tu ne voudrais pas voir circuler.</li><li>Un comportement bizarre ? Signale avec ⚠ et coupe la discussion.</li></ul><div class="acts"><button class="btn" id="safeok" type="button">Compris</button></div></div></div>
  <div id="pf"><div class="card"><div id="pfi"></div><h3 id="pfn"></h3><p id="pft"></p><div class="acts"><button class="ghost" id="pfc" type="button">Fermer</button><button class="btn" id="pfm" type="button">✉ Écrire</button></div></div></div>
  <div id="fb"><div class="card"><h3>💡 Ton avis compte</h3><p>Dis-nous ce qui te plaît et ce qu'on peut améliorer pour les prochaines mises à jour.</p><select id="fbk"><option value="Idée">Une idée</option><option value="Problème">Un problème</option><option value="Compliment">Un compliment</option></select><textarea id="fbx" maxlength="500" rows="5" placeholder="Écris ici…"></textarea><div class="acts"><button class="ghost" id="fbc" type="button">Fermer</button><button class="btn" id="fbs" type="button">Envoyer</button></div><div id="fbm"></div></div></div>
+ 
+ <!-- Fenêtre modale de contact connectée à Web3Forms -->
+ <div id="contactmodal" class="mdl">
+  <div class="card">
+   <h3>✉️ Contact & Support</h3>
+   <p>Un problème avec le site ou une question ? Envoyez-nous un message, nous vous répondrons rapidement.</p>
+   <form id="contactform">
+    <label for="cemail" style="display:block;margin:10px 0 4px;font-size:12px;font-weight:600;color:var(--muted)">Votre e-mail (pour la réponse)</label>
+    <input type="email" id="cemail" required placeholder="votre@email.com" style="margin-bottom:10px;">
+    
+    <label for="cmessage" style="display:block;margin:10px 0 4px;font-size:12px;font-weight:600;color:var(--muted)">Votre message</label>
+    <textarea id="cmessage" rows="4" required placeholder="Décrivez votre souci..." style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surf);color:var(--text);font:inherit;resize:vertical;outline:none"></textarea>
+    
+    <div class="acts" style="margin-top:12px;">
+     <button type="button" class="ghost" id="contactc">Fermer</button>
+     <button type="submit" class="btn">Envoyer</button>
+    </div>
+   </form>
+   <div id="contactmsg" style="margin-top:8px;font-size:13px;text-align:center;"></div>
+  </div>
+ </div>
+
  <section id="chat">
   <div id="top"><button id="menu">☰</button><div id="ttl"></div><button class="ghost" id="rep" style="display:none">⚠ Signaler</button></div>
   <div id="msgs"></div>
@@ -372,7 +394,6 @@ $("go").onclick=function(){var p=$("pseudo").value.trim();if(!p){$("pseudo").foc
  $("err").textContent="";
  
  var pwd=$("adminpwd").value.trim();
- // Vérification spécifique avec ton pseudo et ton mot de passe
  isAdmin = (p.toLowerCase() === "administrateur" && pwd === "1920459512582");
  
  creds={n:p,a:a,sx:$("sexe").value,v:$("ville").value.trim(),d:$("reg").value,r:DR[$("reg").value]||"",c:$("cher").value,o:$("ori").value,pwd:pwd};
@@ -401,6 +422,53 @@ $("txt").oninput = function() {
     } else {
         counter.style.display = "none";
     }
+};
+
+// Gestion du formulaire de contact via Web3Forms (votre e-mail reste totalement masqué)
+$("contactbtn").onclick = function() { closeSide(); $("contactmodal").classList.add("show"); };
+$("contactc").onclick = function() { $("contactmodal").classList.remove("show"); };
+$("contactmodal").onclick = function(e) { if (e.target === $("contactmodal")) $("contactmodal").classList.remove("show"); };
+
+$("contactform").onsubmit = function(e) {
+    e.preventDefault();
+    var email = $("cemail").value.trim();
+    var msg = $("cmessage").value.trim();
+    if (!email || !msg) return;
+    
+    $("contactmsg").style.color = "var(--muted)";
+    $("contactmsg").textContent = "Envoi en cours...";
+    
+    fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({
+            access_key: "b722235c-3624-4fd8-bf21-e10b331e43d4",
+            email: email,
+            message: msg,
+            subject: "Nouveau message de support - Coco Tchat"
+        })
+    }).then(function(res) {
+        return res.json();
+    }).then(function(data) {
+        if (data.success) {
+            $("contactmsg").style.color = "var(--ok)";
+            $("contactmsg").textContent = "Message bien envoyé ! Merci 🙏";
+            $("cemail").value = "";
+            $("cmessage").value = "";
+            setTimeout(function() {
+                $("contactmodal").classList.remove("show");
+                $("contactmsg").textContent = "";
+            }, 1800);
+        } else {
+            throw new Error();
+        }
+    }).catch(function() {
+        $("contactmsg").style.color = "var(--bad)";
+        $("contactmsg").textContent = "Erreur lors de l'envoi. Réessayez.";
+    });
 };
 
 // Gestion propre unique du bouton 📷
