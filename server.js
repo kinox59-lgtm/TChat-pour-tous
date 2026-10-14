@@ -205,6 +205,9 @@ wss.on("connection", (ws, req) => {
       send(ws, { t: "init", i: me.id, n: me.n, salons: SALONS, s: me.s, hist: hist[me.s] });
       sys(me.s, me.n + " est entré(e) dans le salon");
       pushUsers(me.s);
+          wss.clients.forEach(client => {
+      if (client.readyState === 1) send(client, { t: "online_count", count: clients.size });
+    });
       return;
     }
     if (!c) return;
