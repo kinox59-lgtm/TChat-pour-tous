@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tchat Pour Tous">
+<meta name="apple-mobile-web-app-title" content="Coco Tchat">
 <style>
 :root{--bg:#f3f4fb;--surf:#fff;--surf2:#eef0fa;--text:#1b1d2e;--muted:#7a7f9a;--line:#e3e6f3;--a1:#6c5ce7;--a2:#00b4d8;--ok:#2ecc71;--bad:#e5484d;--g:linear-gradient(135deg,var(--a1),var(--a2))}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1220;--surf:#171b2e;--surf2:#1f2440;--text:#eceefb;--muted:#8d93b5;--line:#272d4a}}
@@ -142,7 +142,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 <body>
 <div id="login">
  <div id="lc">
-  <div class="logo">Tchat <b>Pour Tous</b></div>
+  <div class="logo">Coco <b>Tchat</b></div>
   <h2>Bienvenue 👋</h2><p>Hétéro, homo, bi, trans… ici, tout le monde a sa place. Sans inscription.</p>
   <div id="resume"></div>
   <label for="pic">Photo de profil (facultative)</label>
@@ -164,7 +164,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><div class="logo">Tchat <b>Pour Tous</b></div><span id="st">connexion…</span></div>
+  <div class="brand"><div class="logo">Coco <b>Tchat</b></div><span id="st">connexion…</span></div>
   <div class="sec">Salons</div><div id="salons"></div>
   <div class="item" id="sfbtn"><div class="tx nmx">🛡️ Conseils de sécurité</div></div>
   <div class="item" id="fbbtn"><div class="tx nmx">💡 Donner mon avis</div></div>
@@ -178,7 +178,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <input id="file" type="file" accept="image/*" style="display:none">
  </aside>
  <div id="shade"></div>
- <div id="tour" class="mdl"><div class="card"><h3>Bienvenue sur Tchat Pour Tous 👋</h3><ol><li><b>Discute</b> dans un salon, ou touche une personne dans la liste pour lui écrire en <b>privé</b>.</li><li><b>Photos et vidéos</b> : bouton 📷 dans une conversation privée, une fois que l'autre t'a écrit.</li><li><b>Un souci ?</b> Appuie sur ⚠ : la personne est sanctionnée tout de suite.</li><li><b>Une idée ?</b> « 💡 Donner mon avis » dans la barre.</li></ol><div class="acts"><button class="btn" id="tourok" type="button">C'est parti !</button></div></div></div>
+ <div id="tour" class="mdl"><div class="card"><h3>Bienvenue sur Coco Tchat 👋</h3><ol><li><b>Discute</b> dans un salon, ou touche une personne dans la liste pour lui écrire en <b>privé</b>.</li><li><b>Photos et vidéos</b> : bouton 📷 dans une conversation privée, une fois que l'autre t'a écrit.</li><li><b>Un souci ?</b> Appuie sur ⚠ : la personne est sanctionnée tout de suite.</li><li><b>Une idée ?</b> « 💡 Donner mon avis » dans la barre.</li></ol><div class="acts"><button class="btn" id="tourok" type="button">C'est parti !</button></div></div></div>
  <div id="safe" class="mdl"><div class="card"><h3>🛡️ Rencontrer en sécurité</h3><ul><li>Ne donne jamais ton adresse, ton lieu de travail ou tes infos bancaires.</li><li>Prends le temps de discuter ici avant de te voir.</li><li>Premier rendez-vous dans un <b>lieu public</b>, de préférence en journée.</li><li>Préviens un proche : où, avec qui, à quelle heure.</li><li>N'envoie jamais d'argent, même pour une histoire touchante.</li><li>Ne partage pas de photos que tu ne voudrais pas voir circuler.</li><li>Un comportement bizarre ? Signale avec ⚠ et coupe la discussion.</li></ul><div class="acts"><button class="btn" id="safeok" type="button">Compris</button></div></div></div>
  <div id="pf"><div class="card"><div id="pfi"></div><h3 id="pfn"></h3><p id="pft"></p><div class="acts"><button class="ghost" id="pfc" type="button">Fermer</button><button class="btn" id="pfm" type="button">✉ Écrire</button></div></div></div>
  <div id="fb"><div class="card"><h3>💡 Ton avis compte</h3><p>Dis-nous ce qui te plaît et ce qu'on peut améliorer pour les prochaines mises à jour.</p><select id="fbk"><option value="Idée">Une idée</option><option value="Problème">Un problème</option><option value="Compliment">Un compliment</option></select><textarea id="fbx" maxlength="500" rows="5" placeholder="Écris ici…"></textarea><div class="acts"><button class="ghost" id="fbc" type="button">Fermer</button><button class="btn" id="fbs" type="button">Envoyer</button></div><div id="fbm"></div></div></div>
@@ -228,7 +228,7 @@ function list(){return view===null?salonMsgs:(pms[view]?pms[view].msgs:[])}
 function renderMsgs(){var b=$("msgs");b.textContent="";list().forEach(function(m){b.appendChild(row(m))});b.scrollTop=b.scrollHeight}
 function addLive(arr,m,show){arr.push(m);if(arr.length>200)arr.shift();
  if(show){var b=$("msgs"),near=b.scrollHeight-b.scrollTop-b.clientHeight<80;b.appendChild(row(m));while(b.children.length>200)b.removeChild(b.firstChild);if(near||m.n===me)b.scrollTop=b.scrollHeight}}
-function totalUnread(){var n=salonUnread;Object.keys(pms).forEach(function(k){n+=pms[k].unread});document.title=(n?"("+n+") ":"")+"Tchat Pour Tous"}
+function totalUnread(){var n=salonUnread;Object.keys(pms).forEach(function(k){n+=pms[k].unread});document.title=(n?"("+n+") ":"")+"Coco Tchat"}
 
 function renderTop(){var t=$("ttl");t.textContent="";
  if(view===null){var h=document.createElement("div");var a=document.createElement("div");a.className="h";a.textContent="# "+cur;var s=document.createElement("span");s.className="sub";s.textContent=online.filter(function(u){return u.s===cur}).length+" dans ce salon";h.appendChild(a);h.appendChild(s);t.appendChild(h);$("rep").style.display="none"}
@@ -244,17 +244,17 @@ function renderPeople(){var box=$("people"),q=$("q").value.trim().toLowerCase();
  online.forEach(function(u){seen[u.n.toLowerCase()]=1;if(u.n!==me)ons.push(u)});
  Object.keys(pms).forEach(function(k){if(!seen[k])offs.push({n:pms[k].n,i:pms[k].i,p:pms[k].p,sx:pms[k].sx})});
  $("cnt").textContent=online.length+" connecté(s)";
- var ok2=function(u){return (!q||u.n.toLowerCase().indexOf(q)>=0)&&(!$("rgf").value||u.r===$("rgf").value)&&ageOk(u)};
+ var ok2=function(u){return (!q||u.n.toLowerCase().indexOf(q)>=0)&&(!$("rgf").value\vert{}\vert{}u.r===$("rgf").value)&&ageOk(u)};
  var ur=function(u){return (pms[u.n.toLowerCase()]||{}).unread||0};
  var srt=function(a,b){return ur(b)-ur(a)||a.n.localeCompare(b.n)};
  var gk=function(u){return u.sx==="F"?"F":u.sx==="H"?"H":u.sx==="T"?"T":"X"};
  var groups=[["F","♀ Filles"],["H","♂ Garçons"],["T","⚧ Transgenres"],["X","Autres"]],any=false;
- groups.forEach(function(g){if((filt==="F"||filt===H)&&filt!==g[0])return;var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
+ groups.forEach(function(g){if((filt==="F"||filt==="H")&&filt!==g[0])return;var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
   var h=document.createElement("div");h.className="sec2 "+g[0];var a1=document.createElement("span");a1.textContent=g[1];var c1=document.createElement("span");c1.textContent=l.length;h.appendChild(a1);h.appendChild(c1);box.appendChild(h);
   l.forEach(function(u){box.appendChild(mkRow(u,true,ur(u)))})});
  if(filt==="all"){var ol=offs.filter(ok2).sort(srt);if(ol.length){any=true;var h2=document.createElement("div");h2.className="sec2 O";h2.textContent="Conversations (hors ligne)";box.appendChild(h2);ol.forEach(function(u){box.appendChild(mkRow(u,false,ur(u)))})}}
  if(!any){var e=document.createElement("div");e.className="sub";e.style.padding="10px 18px";e.textContent=q?"Personne trouvé":"Personne pour l'instant";box.appendChild(e)}}
-var CHL={"H":"un homme","F":"une femme","HF":"les deux","T":"uma personne trans"},OL={"hetero":"hétéro","homo":"homo","bi":"bi","autre":"autre orientation"};
+var CHL={"H":"un homme","F":"une femme","HF":"les deux","T":"une personne trans"},OL={"hetero":"hétéro","homo":"homo","bi":"bi","autre":"autre orientation"};
 function matchMe(u){var c=creds&&creds.c;if(!c)return true;if(c==="T")return u.sx==="T";return c.indexOf(u.sx)>=0}
 function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d.className="item"+(view===k?" on":"");
  var aw=avd(u.n,u.i,u.p,48,on,u.sx);aw.onclick=function(e){e.stopPropagation();openProfile(u.n)};d.appendChild(aw);
@@ -266,115 +266,4 @@ function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d
  if(on&&(u.c||u.o)){var s2=document.createElement("div");s2.className="sub";s2.textContent="🔎 "+[u.c?"cherche "+CHL[u.c]:"",u.o?OL[u.o]:""].filter(Boolean).join(" · ");t.appendChild(s2)}
  d.appendChild(t);
  if(n){var b=document.createElement("span");b.className="badge";b.textContent=n;d.appendChild(b)}
- if(on){var f=document.createElement("button");f.className="flag";f.textContent="⚠";f.title="Signaler";f.onclick=function(e){e.stopPropagation();if(confirm("Signaler "+u.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:"report",n:u.n})};d.appendChild(f)}
- d.onclick=function(){openPm(u.n);closeSide()};return d}
-function openProfile(name){var k=String(name).toLowerCase(),u=find(name),pm=pms[k];if(!u&&!pm)return;var p=u||{n:name,i:pm.i,p:pm.p};
- var w=$("pfi");w.textContent="";var a=av(p.n,p.i,p.p,220);a.style.borderRadius="22px";w.appendChild(a);$("pfn").textContent=p.n;
- var l1=u?[u.a?u.a+" ans":"",locText(u)].filter(Boolean).join(" · "):"hors ligne";
- var l2=u&&(u.c||u.o)?"\n🔎 "+[u.c?"cherche "+CHL[u.c]:"",u.o?OL[u.o]:""].filter(Boolean).join(" · "):"";
- $("pft").textContent=l1+l2;$("pfm").style.display=(p.n===me||!u)?"none":"";
- $("pfm").onclick=function(){$("pf").classList.remove("show");openPm(p.n)};$("pf").classList.add("show")}
-function renderMe(){var u=find(me),w=$("meav");w.textContent="";var mw=avd(me,myId,u?u.p:0,44,true,u?u.sx:"");mw.onclick=function(){openProfile(me)};w.appendChild(mw);$("men").textContent=me}
-function show(k){view=k;$("att").style.display=k===null?"none":"";if(k===null)salonUnread=0;else pms[k].unread=0;renderTop();renderMsgs();renderSalons();renderPeople();totalUnread();$("txt").placeholder=k===null?"Écris dans # "+cur+"…":"Message privé à "+pms[k].n+"…"}
-function openPm(name){var k=name.toLowerCase(),u=find(name);if(!pms[k])pms[k]={n:u?u.n:name,msgs:[],unread:0};if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}show(k);if(innerWidth>760)$("txt").focus()}
-function closeSide(){$("side").classList.remove("open")}
-
-function connect(){
- ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
- ws.onopen=function(){send({t:"join",n:creds.n,a:creds.a,sx:creds.sx,v:creds.v,d:creds.d,r:creds.r,c:creds.c,o:creds.o})};
- ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
-  if(m.t==="err"){$("err").textContent=m.x;ws.close();return}
-  if(m.t==="banned"){noRe=true;ok=false;$("app").classList.remove("show");$("login").style.display="";$("err").textContent=m.x;return}
-  if(m.t==="init"){ok=true;tries=0;me=m.n;myId=m.i;salons=m.salons;cur=m.s;salonMsgs=m.hist.slice();$("login").style.display="none";$("app").classList.add("show");
-   $("st").textContent="● en ligne";if(!lsGet("tpt_tour")){$("tour").classList.add("show")}if(myPhoto)send({t:"avatar",d:myPhoto});renderMe();show(null);return}
-  if(m.t==="online"){online=m.list;Object.keys(pms).forEach(function(k){var u=find(pms[k].n);if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}});renderMe();renderSalons();renderPeople();renderTop();return}
-  if(m.t==="online_count" && $("#st")){$("#st").textContent = m.count+" en ligne";}                          
-  if(m.t==="salon"){cur=m.s;salonMsgs=m.hist.slice();salonUnread=0;renderSalons();renderTop();if(view===null){renderMsgs();$("txt").placeholder="Écris dans # "+cur+"…"}return}
-  if(m.t==="sys"&&m.s===cur){addLive(salonMsgs,{sys:1,x:m.x},view===null);return}
-  if(m.t==="img" && m.s===cur){
-      addLive(salonMsgs, { u: m.u, x: '<img src="'+m.x+'" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />' }, view==null);
-  }
-  if(m.t==="media" && m.s===cur){
-      addLive(salonMsgs, { u: m.u, x: '<video src="'+m.x+'" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>' }, view==null);
-  }                       
-  if(m.t==="msg"&&m.s===cur){addLive(salonMsgs,m,view===null);if(m.n!==me){beep();if(view!==null){salonUnread++;renderSalons();totalUnread()}}return}
-  if(m.t==="pm"){var other=m.from===me?m.to:m.from,k=other.toLowerCase();
-   if(!pms[k])pms[k]={n:other,msgs:[],unread:0};
-   if(m.from!==me){pms[k].i=m.fid;pms[k].p=m.fp}
-   var now=view===k;addLive(pms[k].msgs,{n:m.from,x:m.x,ts:m.ts,i:m.fid,p:m.fp,media:m.media},now);
-   if(m.from===me&&!now){show(k)}else{if(m.from!==me){beep();if(!now)pms[k].unread++}renderPeople();totalUnread()}return}
-  if(m.t==="fbok"){$("fbm").style.color="var(--ok)";$("fbm").textContent="Merci ! Ton avis a bien été envoyé 🙏";$("fbx").value="";setTimeout(function(){$("fb").classList.remove("show");$("fbm").textContent=""},1600);return}
-  if(m.t==="fberr"){$("fbm").style.color="var(--bad)";$("fbm").textContent=m.x;return}
-  if(m.t==="pmerr"){var k2=String(m.to).toLowerCase();if(pms[k2])addLive(pms[k2].msgs,{sys:1,x:m.x},view===k2)}};
- ws.onclose=function(){$("st").textContent="○ reconnexion…";if(ok&&!noRe&&tries<20){tries++;setTimeout(connect,Math.min(1000*tries,8000))}else if(!noRe){$("st").textContent="hors ligne"}};
-}
-function setPv(){var w=$("pv");w.textContent="";if(myPhoto){var im=document.createElement("img");im.className="av";im.style.setProperty("--sz","60px");im.src=myPhoto;w.appendChild(im)}else{var s=document.createElement("span");s.className="av avi";s.style.setProperty("--sz","60px");s.style.background="var(--surf2)";s.style.color="var(--muted)";s.textContent="📷";w.appendChild(s)}}
-var DATA=["Auvergne-Rhône-Alpes|01 Ain,03 Allier,07 Ardèche,15 Cantal,26 Drôme,38 Isère,42 Loire,43 Haute-Loire,63 Puy-de-Dôme,69 Rhône,73 Savoie,74 Haute-Savoie", "Bourgogne-Franche-Comté|21 Côte-d'Or,25 Doubs,39 Jura,58 Nièvre,70 Haute-Saône,71 Saône-et-Loire,89 Yonne,90 Territoire de Belfort", "Bretagne|22 Côtes-d'Armor,29 Finistère,35 Ille-et-Vilaine,56 Morbihan", "Centre-Val de Loire|18 Cher,28 Eure-et-Loir,36 Indre,37 Indre-et-Loire,41 Loir-et-Cher,45 Loiret", "Corse|2A Corse-du-Sud,2B Haute-Corse", "Grand Est|08 Ardennes,10 Aube,51 Marne,52 Haute-Marne,54 Meurthe-et-Moselle,55 Meuse,57 Moselle,67 Bas-Rhin,68 Haut-Rhin,88 Vosges", "Hauts-de-France|02 Aisne,59 Nord,60 Oise,62 Pas-de-Calais,80 Somme", "Île-de-France|75 Paris,77 Seine-et-Marne,78 Yvelines,91 Essonne,92 Hauts-de-Seine,93 Seine-Saint-Denis,94 Val-de-Marne,95 Val-d'Oise", "Normandie|14 Calvados,27 Eure,50 Manche,61 Orne,76 Seine-Maritime", "Nouvelle-Aquitaine|16 Charente,17 Charente-Maritime,19 Corrèze,23 Creuse,24 Dordogne,33 Gironde,40 Landes,47 Lot-et-Garonne,64 Pyrénées-Atlantiques,79 Deux-Sèvres,86 Vienne,87 Haute-Vienne", "Occitanie|09 Ariège,11 Aude,12 Aveyron,30 Gard,31 Haute-Garonne,32 Gers,34 Hérault,46 Lot,48 Lozère,65 Hautes-Pyrénées,66 Pyrénées-Orientales,81 Tarn,82 Tarn-et-Garonne", "Pays de la Loire|44 Loire-Atlantique,49 Maine-et-Loire,53 Mayenne,72 Sarthe,85 Vendée", "Provence-Alpes-Côte d'Azur|04 Alpes-de-Haute-Provence,05 Hautes-Alpes,06 Alpes-Maritimes,13 Bouches-du-Rhône,83 Var,84 Vaucluse", "Guadeloupe|971 Guadeloupe", "Martinique|972 Martinique", "Guyane|973 Guyane", "La Réunion|974 La Réunion", "Mayotte|976 Mayotte", "Saint-Pierre-et-Miquelon|975 Saint-Pierre-et-Miquelon", "Saint-Barthélemy|977 Saint-Barthélemy", "Saint-Martin|978 Saint-Martin", "Wallis-et-Futuna|986 Wallis-et-Futuna", "Polynésie française|987 Polynésie française", "Nouvelle-Calédonie|988 Nouvelle-Calédonie", "Autre pays|XX Autre pays"];
-var OM={"Guadeloupe":1,"Martinique":1,"Guyane":1,"La Réunion":1,"Mayotte":1,"Saint-Pierre-et-Miquelon":1,"Saint-Barthélemy":1,"Saint-Martin":1,"Wallis-et-Futuna":1,"Polynésie française":1,"Nouvelle-Calédonie":1};
-var DR={},DN={},REGLIST=[];
-DATA.forEach(function(g){var p=g.split("|");REGLIST.push(p[0]);p[1].split(",").forEach(function(x){var i=x.indexOf(" ");DR[x.slice(0,i)]=p[0];DN[x.slice(0,i)]=x.slice(i+1)})});
-(function(){var sel=$("reg"),o=document.createElement("option");o.value="";o.textContent="— Choisis ton département —";sel.appendChild(o);var grp={},codes=Object.keys(DN),ky=function(c){return c==="2A"?20.1:c==="2B"?20.2:c==="XX"?99999:parseInt(c,10)};
- codes.sort(function(x,y){return ky(x)-ky(y)});
- codes.forEach(function(c){var label=c==="XX"?"Ailleurs":c.length>=3?"Outre-mer":"France métropolitaine",og=grp[label];if(!og){og=document.createElement("optgroup");og.label=label;grp[label]=og;sel.appendChild(og)}
-  var op=document.createElement("option");op.value=c;op.textContent=c==="XX"?"Autre pays":c+" · "+DN[c];og.appendChild(op)});
- var f=$("rgf"),o2=document.createElement("option");o2.value="";o2.textContent="🌍 Toutes les régions";f.appendChild(o2);
- REGLIST.forEach(function(r){var x=document.createElement("option");x.textContent=r;f.appendChild(x)});f.onchange=renderPeople})();
-function locText(u){var p=[];if(u.v)p.push(u.v);if(u.d&&u.d!=="XX"&&DN[u.d])p.push(DN[u.d]+" ("+u.d+")");if(u.r&&!(u.d&&DN[u.d]===u.r))p.push(u.r);return p.join(" · ")}
-[].slice.call(document.querySelectorAll(".chip")).forEach(function(c){c.onclick=function(){filt=c.getAttribute("data-f");[].slice.call(document.querySelectorAll(".chip")).forEach(function(x){x.classList.toggle("on",x===c)});renderPeople()}});
-setPv();
-$("pic").onclick=function(){$("file0").click()};
-$("file0").onchange=function(){var f=$("file0").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;setPv()}else $("err").textContent="Image illisible."})};
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-$("go").onclick=function(){var p=$("pseudo").value.trim();if(!p){$("pseudo").focus();return}
- var a=parseInt($("age").value,10);
- if(!$("adult").checked){$("err").textContent="Coche « J'ai 18 ans ou plus » pour entrer.";return}
- if(!(a>=18&&a<=99)){$("err").textContent="Entre ton âge (de 18 à 99 ans). Ce tchat est réservé aux adultes.";return}
- $("err").textContent="";creds={n:p,a:a,sx:$("sexe").value,v:$("ville").value.trim(),d:$("reg").value,r:DR[$("reg").value]||"",c:$("cher").value,o:$("ori").value};
- lsSet("tpt",JSON.stringify({c:creds,ph:myPhoto}));connect()};
-$("rnd").onclick=function(){var A=["Panda","Koala","Comète","Étoile","Citron","Pixel","Tigre","Lune","Nuage","Soleil","Cactus","Dauphin"];$("pseudo").value=A[Math.floor(Math.random()*A.length)]+(10+Math.floor(Math.random()*990))};
-(function(){var sv=null;try{sv=JSON.parse(lsGet("tpt")||"null")}catch(e){}
- if(sv&&sv.c&&sv.c.n&&sv.c.a>=18){var r=$("resume");r.style.display="flex";var b=document.createElement("button");b.type="button";b.className="btn";b.textContent="⚡ Reprendre en tant que "+sv.c.n;b.onclick=function(){creds=sv.c;myPhoto=sv.ph||null;connect()};
-  var f=document.createElement("button");f.type="button";f.className="ghost";f.textContent="Oublier";f.onclick=function(){lsSet("tpt","");r.style.display="none"};r.appendChild(b);r.appendChild(f)}})();
-$("pseudo").addEventListener("keydown",function(e){if(e.key==="Enter")$("go").click()});
-$("chg").onclick=function(){$("file").click()};
-$("file").onchange=function(){var f=$("file").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;send({t:"avatar",d:d})}else alert("Image illisible.")});$("file").value=""};
-$("rm").onclick=function(){myPhoto=null;send({t:"avatar",d:null})};
-
-// Gestion propre unique du bouton 📷
-$("att").onclick=function(){$("mf").click()};
-$("mf").onchange=function(){var f=$("mf").files[0];$("mf").value="";if(!f)return;
- var say=function(x){if(view===null)addLive(salonMsgs,{sys:1,x:x},true);else addLive(pms[view].msgs,{sys:1,x:x},true)};
- if(f.type.indexOf("image/")===0){
-  say("Envoi de la photo…");
-  bigImg(f,function(d){if(d){if(view===null)send({t:"img",x:d});else send({t:"pm",to:pms[view].n,x:d,media:{k:"img"}});}else say("Image illisible ou trop lourde.")});
- }
- else if(f.type==="video/mp4"||f.type==="video/webm"){
-  if(f.size>3*1024*1024){say("Vidéo trop lourde : 3 Mo maximum.");return}
-  say("Envoi de la vidéo…");
-  var fr=new FileReader();
-  fr.onload=function(){if(view===null)send({t:"media",x:fr.result});else send({t:"pm",to:pms[view].n,x:fr.result,media:{k:"vid"}});};
-  fr.readAsDataURL(f);
- }
- else say("Format non accepté.");
-};
-
-$("tourok").onclick=function(){lsSet("tpt_tour","1");$("tour").classList.remove("show")};
-$("sfbtn").onclick=function(){closeSide();$("safe").classList.add("show")};
-$("safeok").onclick=function(){$("safe").classList.remove("show")};
-$("pfc").onclick=function(){$("pf").classList.remove("show")};
-$("pf").onclick=function(e){if(e.target===$("pf"))$("pf").classList.remove("show")};
-$("fbbtn").onclick=function(){closeSide();$("fbm").textContent="";$("fb").classList.add("show")};
-$("fbc").onclick=function(){$("fb").classList.remove("show")};
-$("fbs").onclick=function(){var x=$("fbx").value.trim();if(x.length<5){$("fbm").style.color="var(--bad)";$("fbm").textContent="Écris au moins quelques mots.";return}send({t:"feedback",k:$("fbk").value,x:x})};
-$("q").oninput=renderPeople;
-$("amin").oninput=$("amax").oninput=renderPeople;
-$("menu").onclick=function(){$("side").classList.toggle("open")};
-$("shade").onclick=closeSide;
-$("rep").onclick=function(){if(view===null)return;var n=pms[view].n;if(confirm("Signaler "+n+" ?\nLa personne sera sanctionnée immédiatement.")){send({t:"report",n:n});addLive(pms[view].msgs,{sys:1,x:"Signalement envoyé."},true)}};
-$("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if(!t||!ws||ws.readyState!==1)return;$("txt").value="";t=smileys(t);
- if(view===null)send({t:"msg",x:t});else send({t:"pm",to:pms[view].n,x:t})};
-})();
-</script>
-</body>
-</html> 
+ if(on){var f=document.createElement("button");f
