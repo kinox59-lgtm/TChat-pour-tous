@@ -125,7 +125,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 .mine .bub{background:var(--g);color:#fff;border-radius:16px 16px 4px 16px}
 .tm{font-size:10px;opacity:.55;margin-left:8px;white-space:nowrap}
 .sys{align-self:center;font-size:11px;color:var(--muted);background:var(--surf2);border-radius:20px;padding:3px 12px;margin:4px 0}
-#form{display:flex;gap:8px;padding:12px;background:var(--surf);border-top:1px solid var(--line)}
+#form{display:flex;gap:8px;padding:12px;background:var(--surf);border-top:1px solid var(--line);align-items:center}
 #txt{border-radius:24px;padding:12px 18px}
 #snd{width:46px;height:46px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:18px;cursor:pointer;flex:none}
 #shade{display:none}
@@ -168,6 +168,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <div class="sec">Salons</div><div id="salons"></div>
   <div class="item" id="sfbtn"><div class="tx nmx">🛡️ Conseils de sécurité</div></div>
   <div class="item" id="fbbtn"><div class="tx nmx">💡 Donner mon avis</div></div>
+  <div class="item" id="soundbtn"><div class="tx nmx" id="soundtxt">🔊 Sons activés</div></div>
   <div class="sec"><span>En ligne</span><span id="cnt"></span></div>
   <div class="chips" id="chips"><button class="chip on" data-f="all">Tous</button><button class="chip" data-f="F">♀ Filles</button><button class="chip" data-f="H">♂ Garçons</button><button class="chip" data-f="me">💘 Pour moi</button></div>
   <select id="rgf"></select>
@@ -185,7 +186,15 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
  <section id="chat">
   <div id="top"><button id="menu">☰</button><div id="ttl"></div><button class="ghost" id="rep" style="display:none">⚠ Signaler</button></div>
   <div id="msgs"></div>
-  <form id="form"><button type="button" id="att" title="Envoyer une photo ou une vidéo" style="display:none">📷</button><input id="mf" type="file" accept="image/*,video/mp4,video/webm" style="display:none"><input id="txt" maxlength="300" autocomplete="off" placeholder="Écris un message…"><button id="snd" type="submit">➤</button></form>
+  <form id="form">
+   <button type="button" id="att" title="Envoyer une photo ou une vidéo" style="display:none">📷</button>
+   <input id="mf" type="file" accept="image/*,video/mp4,video/webm" style="display:none">
+   <div style="flex:1; position:relative; display:flex; flex-direction:column;">
+    <input id="txt" maxlength="300" autocomplete="off" placeholder="Écris un message…">
+    <span id="char-count" style="position:absolute; right:12px; bottom:-16px; font-size:10px; color:var(--muted); display:none;">0/300</span>
+   </div>
+   <button id="snd" type="submit">➤</button>
+  </form>
  </section>
 </div>
 
@@ -193,12 +202,28 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 (function(){
 var $=function(i){return document.getElementById(i)};
 var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null;
+var soundEnabled = localStorage.getItem("tpt_sound") !== "off";
+
+function updateSoundUI() {
+    $("soundtxt").textContent = soundEnabled ? "🔊 Sons activés" : "🔇 Sons coupés";
+}
+
+$("soundbtn").onclick = function() {
+    soundEnabled = !soundEnabled;
+    localStorage.setItem("tpt_sound", soundEnabled ? "on" : "off");
+    updateSoundUI();
+};
+updateSoundUI();
+
 var SM={":)":"🙂",":-)":"🙂",":D":"😃",":(":"🙁",";)":"😉",":p":"😛",":P":"😛",":o":"😮","<3":"❤️","lol":"😂","mdr":"🤣"};
 function smileys(t){return t.split(" ").map(function(w){return SM[w]||w}).join(" ")}
 function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return "hsl("+h+",60%,52%)"}
 function hhmm(ts){var d=new Date(ts||Date.now());return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
 var ac=null;
-function beep(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;g.gain.value=.04;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.08)}catch(e){}}
+function beep(){
+    if(!soundEnabled) return;
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;g.gain.value=.04;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.08)}catch(e){}
+}
 function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
 function find(n){var k=String(n).toLowerCase();for(var i=0;i<online.length;i++)if(online[i].n.toLowerCase()===k)return online[i];return null}
 
@@ -341,6 +366,23 @@ $("chg").onclick=function(){$("file").click()};
 $("file").onchange=function(){var f=$("file").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;send({t:"avatar",d:d})}else alert("Image illisible.")});$("file").value=""};
 $("rm").onclick=function(){myPhoto=null;send({t:"avatar",d:null})};
 
+// Gestion du compteur de caractères en temps réel
+$("txt").oninput = function() {
+    var len = $("txt").value.length;
+    var counter = $("char-count");
+    if (len > 0) {
+        counter.style.display = "block";
+        counter.textContent = len + "/300";
+        if (len >= 270) {
+            counter.style.color = "var(--bad)";
+        } else {
+            counter.style.color = "var(--muted)";
+        }
+    } else {
+        counter.style.display = "none";
+    }
+};
+
 // Gestion propre unique du bouton 📷
 $("att").onclick=function(){$("mf").click()};
 $("mf").onchange=function(){var f=$("mf").files[0];$("mf").value="";if(!f)return;
@@ -372,7 +414,7 @@ $("amin").oninput=$("amax").oninput=renderPeople;
 $("menu").onclick=function(){$("side").classList.toggle("open")};
 $("shade").onclick=closeSide;
 $("rep").onclick=function(){if(view===null)return;var n=pms[view].n;if(confirm("Signaler "+n+" ?\nLa personne sera sanctionnée immédiatement.")){send({t:"report",n:n});addLive(pms[view].msgs,{sys:1,x:"Signalement envoyé."},true)}};
-$("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if(!t||!ws||ws.readyState!==1)return;$("txt").value="";t=smileys(t);
+$("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if(!t||!ws||ws.readyState!==1)return;$("txt").value="";$("char-count").style.display="none";t=smileys(t);
  if(view===null)send({t:"msg",x:t});else send({t:"pm",to:pms[view].n,x:t})};
 })();
 </script>
