@@ -465,12 +465,13 @@
         </div>
         <div class="composer-extras">
           <label class="file-label">
-            📎 Fichier
+            📎 Fichier / Galerie
             <input id="mediaInput" type="file" accept="image/*,video/*,audio/*">
           </label>
-          <label class="file-label">
-            📸 Caméra
-            <input id="cameraInput" type="file" accept="image/*,video/*" capture="environment">
+          <label class="file-label" style="color:var(--primary); font-weight:bold;">
+            📸 Caméra directe
+            <!-- capture="environment" force l'ouverture instantanée de l'appareil photo sur smartphone -->
+            <input id="cameraInput" type="file" accept="image/*" capture="environment">
           </label>
           <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer; color:var(--primary); font-weight:bold;">
             🎤 <span id="voiceText">Vocal</span>
