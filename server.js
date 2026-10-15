@@ -17,7 +17,6 @@ const HISTORY_FILE = path.join(DATA_DIR, "history.json");
 
 const MAX_PAYLOAD = 5 * 1024 * 1024;
 const MAX_MEDIA_TOTAL = 150 * 1024 * 1024;
-const MEDIA_TTL = 30 * 60 * 1000;
 const HISTORY_LIMIT = 40;
 
 const SALONS = [
@@ -28,11 +27,6 @@ const SALONS = [
   "Jeux vidéo",
   "Détente",
   "Avis & idées"
-];
-
-const RESERVED = [
-  "équipe", "equipe", "admin", "administrateur",
-  "modérateur", "moderateur", "modo", "staff", "support"
 ];
 
 const PUB = fs.existsSync(path.join(__dirname, "public"))
