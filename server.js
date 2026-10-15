@@ -1,6 +1,5 @@
 "use strict";
 
-// Coco Tchat — serveur Node.js pour Render
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
@@ -20,9 +19,6 @@ const MAX_PAYLOAD = 5 * 1024 * 1024;
 const MAX_MEDIA_TOTAL = 150 * 1024 * 1024;
 const MEDIA_TTL = 30 * 60 * 1000;
 const HISTORY_LIMIT = 40;
-const REPORT_WINDOW = 2 * 60 * 1000;
-const MIN_REPORT_TIME = 20 * 1000;
-const MAX_REPORTS_PER_MINUTE = 5;
 
 const SALONS = [
   "Général",
@@ -89,7 +85,6 @@ const saveHistories = () => saveJSON(HISTORY_FILE, histories);
 const clients = new Map();
 const avatars = new Map();
 const mediaFiles = new Map();
-const recentReports = new Map();
 
 let mediaBytes = 0;
 let onlineTimer = null;
@@ -189,14 +184,6 @@ function banRemaining(key) {
   return ban - Date.now();
 }
 
-function humanDuration(ms) {
-  if (ms === Infinity) return "définitivement";
-  const minutes = Math.ceil(ms / 60000);
-  if (minutes >= 1440) return Math.ceil(minutes / 1440) + " jour(s)";
-  if (minutes >= 60) return Math.ceil(minutes / 60) + " heure(s)";
-  return minutes + " minute(s)";
-}
-
 function deleteMedia(id) {
   const file = mediaFiles.get(id);
   if (!file) return;
@@ -224,14 +211,6 @@ function parseDataURL(value) {
   return { buffer, type: match[1] };
 }
 
-function mimeExtension(type) {
-  return ({
-    "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
-    "video/mp4": "mp4", "video/webm": "webm", "audio/webm": "weba",
-    "audio/ogg": "ogg", "audio/wav": "wav", "audio/mp4": "m4a"
-  })[type] || "bin";
-}
-
 function removeClient(ws) {
   const client = clients.get(ws);
   if (!client) return;
@@ -251,7 +230,7 @@ function disconnectBanned(key, message) {
   pushOnline();
 }
 
-function applySanction(key, name) {
+function applySanction(key) {
   if (!store.strikes[key]) store.strikes[key] = 0;
   store.strikes[key] += 1;
   const duration = 30 * 60 * 1000;
@@ -287,7 +266,6 @@ const server = http.createServer((req, res) => {
     return res.end("ok");
   }
 
-  // Panneau d'administration sécurisé avec formulaire de login intégré
   if (pathname === "/admin") {
     const supplied = url.searchParams.get("key") || "";
     const authorized = ADMIN_KEY.length > 0 && supplied.length === ADMIN_KEY.length &&
@@ -469,7 +447,7 @@ wss.on("connection", (ws, req) => {
         const targetName = text.slice(5).trim();
         for (const [targetWs, targetClient] of clients) {
           if (targetClient.n.toLocaleLowerCase() === targetName.toLocaleLowerCase()) {
-            applySanction(targetClient.key, targetClient.n);
+            applySanction(targetClient.key);
             systemMessage(client.s, "⚠️ " + targetClient.n + " a été banni par l'administrateur.");
           }
         }
