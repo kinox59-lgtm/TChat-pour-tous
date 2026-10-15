@@ -254,7 +254,7 @@ function disconnectBanned(key, message) {
 function applySanction(key, name) {
   if (!store.strikes[key]) store.strikes[key] = 0;
   store.strikes[key] += 1;
-  const duration = 30 * 60 * 1000; // 30 minutes
+  const duration = 30 * 60 * 1000;
   store.bans[key] = Date.now() + duration;
   saveBans();
   disconnectBanned(key, "Suspension administrative.");
@@ -287,22 +287,32 @@ const server = http.createServer((req, res) => {
     return res.end("ok");
   }
 
-  // Panneau d'administration sécurisé
+  // Panneau d'administration sécurisé avec formulaire de login intégré
   if (pathname === "/admin") {
     const supplied = url.searchParams.get("key") || "";
     const authorized = ADMIN_KEY.length > 0 && supplied.length === ADMIN_KEY.length &&
       crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(ADMIN_KEY));
 
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+
     if (!authorized) {
-      res.writeHead(401, { "Content-Type": "text/html; charset=utf-8" });
-      return res.end("<h2>Accès refusé. Ajoute ?key=TA_CLE_ADMIN dans l'URL.</h2>");
+      return res.end(`
+        <!doctype html><html lang='fr'><meta charset='utf-8'>
+        <title>Admin - Coco Tchat</title>
+        <body style='font-family:sans-serif;max-width:400px;margin:80px auto;padding:0 20px;text-align:center;'>
+          <h2>Administration Coco Tchat</h2>
+          <form method='GET' action='/admin' style='display:grid;gap:12px;'>
+            <input type='password' name='key' placeholder='Mot de passe administrateur' style='padding:10px;font-size:16px;border:1px solid #ccc;border-radius:8px;' required>
+            <button type='submit' style='padding:10px;font-size:16px;background:#6658e8;color:white;border:0;border-radius:8px;cursor:pointer;'>Se connecter</button>
+          </form>
+        </body></html>
+      `);
     }
 
     const onlineRows = [...clients.values()].map(c => 
       `<li><b>${escapeHTML(c.n)}</b> (${c.s}) - IP Key: ${c.key.slice(0,8)}... <a href="/admin/kick?key=${supplied}&name=${encodeURIComponent(c.n)}">[Exclure]</a></li>`
     ).join("");
 
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     return res.end(`
       <!doctype html><html lang='fr'><meta charset='utf-8'>
       <title>Panel Admin Coco Tchat</title>
@@ -311,6 +321,7 @@ const server = http.createServer((req, res) => {
         <p><b>Utilisateurs connectés (${clients.size}) :</b></p>
         <ul>${onlineRows || "<li>Personne en ligne</li>"}</ul>
         <p><a href="/avis?key=${supplied}" target="_blank">Voir les avis (${feedback.length})</a></p>
+        <p><a href="/admin">Se déconnecter</a></p>
       </body></html>
     `);
   }
@@ -454,7 +465,6 @@ wss.on("connection", (ws, req) => {
       const text = clean(message.x, 1000);
       if (!text) return;
 
-      // Commande Admin /ban
       if (client.admin && text.startsWith("/ban ")) {
         const targetName = text.slice(5).trim();
         for (const [targetWs, targetClient] of clients) {
