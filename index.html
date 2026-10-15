@@ -8,7 +8,6 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <title>Coco Tchat</title>
 
-  <!-- Script Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
@@ -208,7 +207,6 @@
     }
 
     .message-meta strong { color: var(--primary-dark); }
-    .message-meta time { color: var(--muted); font-size: 10px; }
 
     .media-preview {
       display: block;
@@ -324,9 +322,15 @@
       font-size: 13px;
     }
 
-    .notice.error {
-      background: #fff0f2;
-      color: #b32743;
+    .pm-banner {
+      background: #eeebff;
+      color: #5144c8;
+      padding: 8px 12px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
     }
 
     .modal {
@@ -433,6 +437,11 @@
         <span id="onlineCount" class="count">0 en ligne</span>
       </header>
 
+      <div id="pmBanner" class="pm-banner hidden">
+        <span>🔒 Discussion privée avec <b id="pmTargetName">...</b></span>
+        <button onclick="closePrivateChat()" style="border:0; background:none; color:#5144c8; cursor:pointer; font-weight:bold;">✖ Revenir au salon</button>
+      </div>
+
       <div id="notice" class="notice hidden" role="status"></div>
       <div id="messages" class="messages" aria-live="polite">
         <div class="empty">Connecte-toi pour rejoindre la discussion.</div>
@@ -475,11 +484,11 @@
     Coco Tchat · Respect, sécurité et convivialité
   </footer>
 
-  <!-- Modal de connexion -->
+  <!-- Modal de création de compte / connexion -->
   <div id="loginModal" class="modal">
     <section class="modal-card">
       <h2>Bienvenue sur Coco Tchat 👋</h2>
-      <p>Choisis un pseudo et renseigne les informations demandées pour accéder aux salons.</p>
+      <p>Crée ton profil pour enregistrer tes amis et rejoindre les discussions.</p>
 
       <div id="loginNotice" class="notice hidden" role="alert"></div>
 
@@ -492,7 +501,7 @@
         <div class="form-row">
           <div class="field">
             <label for="age">Âge</label>
-            <input id="age" type="number" min="18" max="99" required>
+            <input id="age" type="number" min="18" max="99" required placeholder="18">
           </div>
           <div class="field">
             <label for="gender">Genre (facultatif)</label>
@@ -501,14 +510,13 @@
               <option value="H">Homme</option>
               <option value="F">Femme</option>
               <option value="T">Autre</option>
-              <option value="Autre">Préfère ne pas préciser</option>
             </select>
           </div>
         </div>
 
         <div class="field">
           <label for="city">Ville ou région (facultatif)</label>
-          <input id="city" maxlength="20" placeholder="Ville ou région">
+          <input id="city" maxlength="20" placeholder="Ex. Paris, Lyon...">
         </div>
 
         <div class="field">
@@ -522,7 +530,6 @@
             <option value="">Non précisé</option>
             <option value="H">Hommes</option>
             <option value="F">Femmes</option>
-            <option value="HF">Hommes et femmes</option>
             <option value="T">Tout le monde</option>
           </select>
         </div>
@@ -534,23 +541,22 @@
             <option value="hetero">Hétéro</option>
             <option value="homo">Homo</option>
             <option value="bi">Bi</option>
-            <option value="autre">Autre / préfère ne pas préciser</option>
           </select>
         </div>
 
         <div class="field">
           <label for="adminKey">Clé de modération (facultatif)</label>
-          <input id="adminKey" type="password" autocomplete="off" placeholder="Laisse vide si tu n'es pas modérateur">
+          <input id="adminKey" type="password" autocomplete="off" placeholder="Laisse vide si non admin">
         </div>
 
         <div class="cf-turnstile" data-sitekey="0x4AAAAAAFXj08CLWxiKawxa" style="margin: 8px 0;"></div>
 
         <label style="font-size:13px;display:flex;gap:9px;align-items:flex-start">
           <input id="acceptRules" type="checkbox" required style="margin-top:3px">
-          <span>Je confirme avoir 18 ans ou plus et j'accepte les règles de respect et de sécurité du tchat.</span>
+          <span>Je confirme avoir 18 ans ou plus et j'accepte les règles du tchat.</span>
         </label>
 
-        <button class="btn" type="submit" style="width:100%; margin-top:10px;">Entrer dans le tchat</button>
+        <button class="btn" type="submit" style="width:100%; margin-top:10px;">Valider et Entrer</button>
       </form>
     </section>
   </div>
@@ -574,7 +580,6 @@
       if (savedProfile.c) $("lookingFor").value = savedProfile.c;
       if (savedProfile.o) $("orientation").value = savedProfile.o;
 
-      // Si le profil est mémorisé, on se connecte automatiquement au chargement de la page
       if (savedProfile.n && savedProfile.a) {
         openSocket({ ...savedProfile, adminKey: "", token: "" });
       } else {
@@ -589,9 +594,29 @@
 
     function toggleFriend(name) {
       const idx = friends.indexOf(name);
-      if (idx > -1) friends.splice(idx, 1); else friends.push(name);
+      if (idx > -1) {
+        friends.splice(idx, 1);
+        toast(name + " retiré de tes amis.");
+      } else {
+        friends.push(name);
+        toast(name + " ajouté à tes amis ! ⭐");
+      }
       localStorage.setItem("coco_friends", JSON.stringify(friends));
       renderOnline();
+    }
+
+    function startPrivateChat(targetName) {
+      if (targetName === myName) return;
+      privateTarget = targetName;
+      $("pmTargetName").textContent = targetName;
+      $("pmBanner").classList.remove("hidden");
+      toast("Discussion privée avec " + targetName);
+    }
+
+    function closePrivateChat() {
+      privateTarget = "";
+      $("pmBanner").classList.add("hidden");
+      toast("Retour au salon public.");
     }
 
     function setConnection(isConnected, label) {
@@ -623,8 +648,10 @@
           toast("Bienvenue " + myName + " !");
         } else if (msg.t === "msg" || msg.t === "pm") {
           renderMessage(msg);
-          if (msg.x && msg.x.includes("@" + myName)) {
-            toast("💬 Vous avez été mentionné par " + msg.n);
+          if (msg.t === "pm" && msg.from !== myName) {
+            toast("💬 Message privé de " + msg.from);
+          } else if (msg.x && msg.x.includes("@" + myName)) {
+            toast("💬 Tu as été mentionné par " + msg.n);
             if (navigator.vibrate) navigator.vibrate(200);
           }
         } else if (msg.t === "online") {
@@ -645,7 +672,8 @@
     function renderMessage(msg) {
       const box = $("messages");
       const div = document.createElement("div");
-      div.className = "message" + (msg.n === myName ? " mine" : "");
+      const isMe = (msg.n === myName || msg.from === myName);
+      div.className = "message" + (isMe ? " mine" : "");
       
       let mediaHtml = "";
       if (msg.media && msg.media.id) {
@@ -655,12 +683,16 @@
         else if (msg.media.k === "aud") mediaHtml = `<audio src="${url}" controls class="media-preview"></audio>`;
       }
 
-      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${msg.n}</strong></div><div>${msg.x || ""}</div>${mediaHtml}</div>`;
+      const senderName = msg.from || msg.n || "Anonyme";
+      const tag = msg.t === "pm" ? " 🔒 (Privé)" : "";
+
+      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${senderName}${tag}</strong></div><div>${msg.x || ""}</div>${mediaHtml}</div>`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
 
     function renderOnline() {
+      // 1. Liste des utilisateurs connectés à droite
       const list = $("userList");
       list.replaceChildren();
       onlineUsers.forEach(u => {
@@ -668,10 +700,39 @@
         const card = document.createElement("div");
         card.className = "user-card";
         const isF = friends.includes(u.n);
-        card.innerHTML = `<div style="min-width:0"><div class="user-name">${u.n}</div><div class="user-sub">${u.s}</div></div>
-          <button onclick="toggleFriend('${u.n}')" style="margin-left:auto">${isF ? '★' : '☆'}</button>`;
+        
+        card.innerHTML = `
+          <div style="min-width:0; flex:1; cursor:pointer;" onclick="startPrivateChat('${u.n}')">
+            <div class="user-name">${u.n}</div>
+            <div class="user-sub">${u.s}</div>
+          </div>
+          <button onclick="toggleFriend('${u.n}')" style="border:0; background:none; cursor:pointer; font-size:16px;">${isF ? '⭐' : '☆'}</button>
+        `;
         list.appendChild(card);
       });
+      $("userCount").textContent = onlineUsers.length;
+
+      // 2. Liste des amis à gauche
+      const friendsBox = $("friendsList");
+      if (friendsBox) {
+        friendsBox.replaceChildren();
+        if (friends.length === 0) {
+          friendsBox.innerHTML = '<div class="empty" style="font-size:11px; padding:5px;">Aucun ami enregistré.</div>';
+        } else {
+          friends.forEach(fName => {
+            const fCard = document.createElement("div");
+            fCard.className = "user-card";
+            fCard.innerHTML = `
+              <div style="min-width:0; flex:1; cursor:pointer;" onclick="startPrivateChat('${fName}')">
+                <div class="user-name">${fName}</div>
+                <div class="user-sub">Ami</div>
+              </div>
+              <button onclick="toggleFriend('${fName}')" style="border:0; background:none; cursor:pointer; color:#d83c56;">❌</button>
+            `;
+            friendsBox.appendChild(fCard);
+          });
+        }
+      }
     }
 
     $("adminPanelBtn").addEventListener("click", () => {
@@ -717,6 +778,7 @@
       btn.className = "salon-btn" + (s === currentSalon ? " active" : "");
       btn.textContent = "💬 " + s;
       btn.onclick = () => {
+        closePrivateChat();
         currentSalon = s;
         socket.send(JSON.stringify({ t: "salon", s }));
         document.querySelectorAll(".salon-btn").forEach(b => b.classList.remove("active"));
