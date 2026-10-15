@@ -322,6 +322,11 @@
       font-size: 13px;
     }
 
+    .notice.error {
+      background: #fff0f2;
+      color: #b32743;
+    }
+
     .pm-banner {
       background: #eeebff;
       color: #5144c8;
@@ -484,11 +489,11 @@
     Coco Tchat · Respect, sécurité et convivialité
   </footer>
 
-  <!-- Modal de création de compte / connexion -->
+  <!-- Modal de connexion (Libre ou avec Compte) -->
   <div id="loginModal" class="modal">
     <section class="modal-card">
       <h2>Bienvenue sur Coco Tchat 👋</h2>
-      <p>Crée ton profil pour enregistrer tes amis et rejoindre les discussions.</p>
+      <p>Entre ton pseudo pour entrer immédiatement, ou crée un compte avec un mot de passe pour garder tes amis.</p>
 
       <div id="loginNotice" class="notice hidden" role="alert"></div>
 
@@ -498,13 +503,23 @@
           <input id="nickname" maxlength="16" minlength="2" autocomplete="nickname" required placeholder="Ton pseudo">
         </div>
 
+        <div class="field">
+          <label for="password">Mot de passe (Optionnel)</label>
+          <input id="password" type="password" autocomplete="off" placeholder="Laisse vide pour entrer sans compte">
+        </div>
+
+        <label id="registerWrapper" class="hidden" style="font-size:13px;display:flex;gap:9px;align-items:center;background:#f8f7ff;padding:8px;border-radius:8px;">
+          <input id="isRegisterCheckbox" type="checkbox" style="width:16px;height:16px;">
+          <span><b>Je veux créer ce compte avec ce mot de passe</b></span>
+        </label>
+
         <div class="form-row">
           <div class="field">
             <label for="age">Âge</label>
             <input id="age" type="number" min="18" max="99" required placeholder="18">
           </div>
           <div class="field">
-            <label for="gender">Genre (facultatif)</label>
+            <label for="gender">Genre</label>
             <select id="gender">
               <option value="">Non précisé</option>
               <option value="H">Homme</option>
@@ -512,36 +527,6 @@
               <option value="T">Autre</option>
             </select>
           </div>
-        </div>
-
-        <div class="field">
-          <label for="city">Ville ou région (facultatif)</label>
-          <input id="city" maxlength="20" placeholder="Ex. Paris, Lyon...">
-        </div>
-
-        <div class="field">
-          <label for="department">Département (facultatif)</label>
-          <input id="department" maxlength="3" placeholder="Ex. 75">
-        </div>
-
-        <div class="field">
-          <label for="lookingFor">Recherche (facultatif)</label>
-          <select id="lookingFor">
-            <option value="">Non précisé</option>
-            <option value="H">Hommes</option>
-            <option value="F">Femmes</option>
-            <option value="T">Tout le monde</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="orientation">Orientation (facultatif)</label>
-          <select id="orientation">
-            <option value="">Non précisée</option>
-            <option value="hetero">Hétéro</option>
-            <option value="homo">Homo</option>
-            <option value="bi">Bi</option>
-          </select>
         </div>
 
         <div class="field">
@@ -553,10 +538,10 @@
 
         <label style="font-size:13px;display:flex;gap:9px;align-items:flex-start">
           <input id="acceptRules" type="checkbox" required style="margin-top:3px">
-          <span>Je confirme avoir 18 ans ou plus et j'accepte les règles du tchat.</span>
+          <span>J'ai 18 ans ou plus et j'accepte les règles du tchat.</span>
         </label>
 
-        <button class="btn" type="submit" style="width:100%; margin-top:10px;">Valider et Entrer</button>
+        <button class="btn" type="submit" style="width:100%; margin-top:10px;">Entrer dans le tchat</button>
       </form>
     </section>
   </div>
@@ -567,20 +552,27 @@
     "use strict";
     const $ = id => document.getElementById(id);
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
-    let friends = JSON.parse(localStorage.getItem("coco_friends") || "[]");
+    let friends = [];
     let isAdmin = false;
 
     window.addEventListener("DOMContentLoaded", () => {
       const savedProfile = JSON.parse(localStorage.getItem("coco_profile") || "{}");
       if (savedProfile.n) $("nickname").value = savedProfile.n;
+      if (savedProfile.p) $("password").value = savedProfile.p;
       if (savedProfile.a) $("age").value = savedProfile.a;
       if (savedProfile.sx) $("gender").value = savedProfile.sx;
-      if (savedProfile.v) $("city").value = savedProfile.v;
-      if (savedProfile.d) $("department").value = savedProfile.d;
-      if (savedProfile.c) $("lookingFor").value = savedProfile.c;
-      if (savedProfile.o) $("orientation").value = savedProfile.o;
 
-      if (savedProfile.n && savedProfile.a) {
+      // Affiche ou masque la case "Créer un compte" selon si un mot de passe est saisi
+      $("password").addEventListener("input", () => {
+        if ($("password").value.trim().length > 0) {
+          $("registerWrapper").classList.remove("hidden");
+        } else {
+          $("registerWrapper").classList.add("hidden");
+          $("isRegisterCheckbox").checked = false;
+        }
+      });
+
+      if (savedProfile.n) {
         openSocket({ ...savedProfile, adminKey: "", token: "" });
       } else {
         $("loginModal").classList.remove("hidden");
@@ -601,8 +593,11 @@
         friends.push(name);
         toast(name + " ajouté à tes amis ! ⭐");
       }
-      localStorage.setItem("coco_friends", JSON.stringify(friends));
       renderOnline();
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ t: "update_friends", friends }));
+      }
     }
 
     function startPrivateChat(targetName) {
@@ -640,12 +635,18 @@
         if (msg.t === "init") {
           myName = msg.n; myId = msg.i;
           isAdmin = msg.admin === true;
+          friends = Array.isArray(msg.friends) ? msg.friends : [];
           $("loginModal").classList.add("hidden");
           $("messages").replaceChildren();
           msg.hist.forEach(renderMessage);
           setConnection(true, "Connecté");
           $("adminPanelBtn").classList.toggle("hidden", !isAdmin);
+          renderOnline();
           toast("Bienvenue " + myName + " !");
+        } else if (msg.t === "err") {
+          $("loginNotice").textContent = msg.x;
+          $("loginNotice").classList.remove("hidden");
+          $("loginModal").classList.remove("hidden");
         } else if (msg.t === "msg" || msg.t === "pm") {
           renderMessage(msg);
           if (msg.t === "pm" && msg.from !== myName) {
@@ -692,7 +693,6 @@
     }
 
     function renderOnline() {
-      // 1. Liste des utilisateurs connectés à droite
       const list = $("userList");
       list.replaceChildren();
       onlineUsers.forEach(u => {
@@ -712,7 +712,6 @@
       });
       $("userCount").textContent = onlineUsers.length;
 
-      // 2. Liste des amis à gauche
       const friendsBox = $("friendsList");
       if (friendsBox) {
         friendsBox.replaceChildren();
@@ -745,12 +744,10 @@
       const token = document.querySelector('[name="cf-turnstile-response"]')?.value || "";
       const profile = {
         n: $("nickname").value.trim(),
+        p: $("password").value,
         a: $("age").value,
         sx: $("gender").value,
-        v: $("city").value.trim(),
-        d: $("department").value.trim(),
-        c: $("lookingFor").value,
-        o: $("orientation").value
+        register: $("isRegisterCheckbox").checked
       };
       localStorage.setItem("coco_profile", JSON.stringify(profile));
       openSocket({ ...profile, adminKey: $("adminKey").value, token });
@@ -768,7 +765,7 @@
       const text = $("messageInput").value.trim();
       if (!text) return;
       socket.send(JSON.stringify({ t: privateTarget ? "pm" : "msg", to: privateTarget, x: text }));
-      $("messageInput").value = "";
+      $("messageInput"].value = "";
     });
 
     const salonsFallback = ["Général", "18-25 ans", "26-40 ans", "Musique", "Jeux vidéo", "Détente", "Avis & idées"];
