@@ -13,7 +13,7 @@ const SALT = process.env.SALT || crypto.randomBytes(32).toString("hex");
 const DATA_DIR = process.env.DATA_DIR || __dirname;
 const BAN_FILE = process.env.DATA_FILE || path.join(DATA_DIR, "bans.json");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
-const FEEDBACK_FILE = path.join(DATA_DIR, "avis.json");
+const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(DATA_DIR, "avis.json");
 const HISTORY_FILE = path.join(DATA_DIR, "history.json");
 
 const MAX_PAYLOAD = 5 * 1024 * 1024;
@@ -397,16 +397,13 @@ wss.on("connection", (ws, req) => {
 
       let userFriends = [];
 
-      // Si l'utilisateur veut créer un compte ou se connecter avec un mot de passe
       if (password) {
         if (usersDB[lowerName]) {
-          // Connexion au compte existant
           if (usersDB[lowerName].pwd !== hashPassword(password)) {
             return send(ws, { t: "err", x: "Mot de passe incorrect." });
           }
           userFriends = usersDB[lowerName].friends || [];
         } else {
-          // Inscription d'un nouveau compte
           if (!isRegister) {
             return send(ws, { t: "err", x: "Ce pseudo n'a pas de compte. Coche 'Créer un compte' pour l'enregistrer." });
           }
@@ -417,14 +414,13 @@ wss.on("connection", (ws, req) => {
           saveUsers();
         }
       } else if (usersDB[lowerName]) {
-        // Le pseudo existe en tant que compte protégé par mot de passe mais aucun mot de passe n'a été fourni
         return send(ws, { t: "err", x: "Ce pseudo est protégé par un mot de passe. Entre ton mot de passe pour te connecter." });
       }
 
       const admin = isAdminMessage(message);
 
       client = {
-        n: uniqueName(name), // Assure l'unicité si le mode invité prend un pseudo déjà pris
+        n: uniqueName(name),
         a: Number(message.a) || 18,
         sx: message.sx || "",
         v: clean(message.v, 20),
