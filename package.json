@@ -1,9 +1,17 @@
+
 {
-  "name": "tchat-pour-tous",
+  "name": "coco-tchat",
   "version": "1.0.0",
-  "description": "Tchat Pour Tous : tchat en direct, sans inscription, ouvert à tout le monde",
+  "private": true,
+  "description": "Coco Tchat - application de discussion en temps réel",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
-  "dependencies": { "ws": "^8.18.0" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
 }
