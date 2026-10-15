@@ -146,7 +146,6 @@ function systemMessage(salon, message) {
   });
 }
 
-// Diffusion instantanée sans délai (temps réel pur)
 function pushOnline() {
   const list = [...clients.values()].slice(0, 300).map((c) => ({
     n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av, s: c.s
