@@ -469,8 +469,7 @@
             <input id="mediaInput" type="file" accept="image/*,video/*,audio/*">
           </label>
           <label class="file-label" style="color:var(--primary); font-weight:bold;">
-            📸 Caméra directe
-            <!-- capture="environment" force l'ouverture instantanée de l'appareil photo sur smartphone -->
+            📸 Caméra
             <input id="cameraInput" type="file" accept="image/*" capture="environment">
           </label>
           <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer; color:var(--primary); font-weight:bold;">
@@ -492,6 +491,28 @@
     </aside>
   </main>
 
+  <!-- Modale Règles -->
+  <div id="rulesModal" class="modal hidden">
+    <section class="modal-card">
+      <h2>📋 Règles du tchat</h2>
+      <p>1. Respecte tous les participants.<br>2. Les contenus injurieux, haineux ou illégaux sont interdits.<br>3. Âge requis : 18 ans minimum.<br>4. Pas de spam ni de publicité.</p>
+      <button class="btn" onclick="$('rulesModal').classList.add('hidden')" style="width:100%; margin-top:15px;">Fermer</button>
+    </section>
+  </div>
+
+  <!-- Modale Avis -->
+  <div id="feedbackModal" class="modal hidden">
+    <section class="modal-card">
+      <h2>💡 Donner mon avis</h2>
+      <p>Laisse ton commentaire pour nous aider à améliorer Coco Tchat.</p>
+      <textarea id="feedbackText" rows="4" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:10px; margin:10px 0;" placeholder="Ton avis..."></textarea>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="sendFeedback()" style="flex:1;">Envoyer</button>
+        <button class="btn" onclick="$('feedbackModal').classList.add('hidden')" style="background:#777b91; flex:1;">Annuler</button>
+      </div>
+    </section>
+  </div>
+
   <footer class="footer">
     Coco Tchat · Convivialité et sécurité
   </footer>
@@ -500,8 +521,6 @@
     <section class="modal-card">
       <h2>Bienvenue sur Coco Tchat 👋</h2>
       <p>Entre ton pseudo pour entrer immédiatement, ou crée un compte avec un mot de passe pour garder tes amis.</p>
-
-      <div id="loginNotice" class="notice hidden" role="alert"></div>
 
       <form id="loginForm" class="form-grid">
         <div class="field">
@@ -619,6 +638,10 @@
         }
       });
 
+      // Gestion des boutons de la communauté
+      $("rulesBtn").addEventListener("click", () => $("rulesModal").classList.remove("hidden"));
+      $("feedbackBtn").addEventListener("click", () => $("feedbackModal").classList.remove("hidden"));
+
       if (savedProfile.n) {
         openSocket({ ...savedProfile, adminKey: "", token: "" });
       } else {
@@ -692,6 +715,10 @@
           toast("Bienvenue " + myName + " !");
         } else if (msg.t === "err") {
           toast("⚠️ " + msg.x);
+        } else if (msg.t === "feedback_ok") {
+          toast(msg.x);
+          $("feedbackModal").classList.add("hidden");
+          $("feedbackText").value = "";
         } else if (msg.t === "msg" || msg.t === "pm") {
           renderMessage(msg);
           if (msg.t === "pm" && msg.from !== myName) {
@@ -794,7 +821,7 @@
         if (socket && socket.readyState === WebSocket.OPEN) {
           socket.send(JSON.stringify({
             t: "media",
-            to: privateTarget,
+            to: privateTarget || "",
             d: e.target.result
           }));
           toast("Fichier envoyé !");
@@ -825,7 +852,7 @@
               if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                   t: "media",
-                  to: privateTarget,
+                  to: privateTarget || "",
                   d: e.target.result
                 }));
                 toast("Message vocal envoyé !");
@@ -850,6 +877,14 @@
         $("voiceText").textContent = "Vocal";
       }
     });
+
+    function sendFeedback() {
+      const text = $("feedbackText").value.trim();
+      if (!text) return;
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ t: "feedback", x: text }));
+      }
+    }
 
     $("adminPanelBtn").addEventListener("click", () => {
       const key = prompt("Entrez votre clé de modération :");
@@ -885,7 +920,12 @@
       e.preventDefault();
       const text = $("messageInput").value.trim();
       if (!text) return;
-      socket.send(JSON.stringify({ t: privateTarget ? "pm" : "msg", to: privateTarget, x: text }));
+      // Envoi rigoureusement séparé : si privateTarget est défini -> "pm", sinon -> "msg"
+      if (privateTarget) {
+        socket.send(JSON.stringify({ t: "pm", to: privateTarget, x: text }));
+      } else {
+        socket.send(JSON.stringify({ t: "msg", x: text }));
+      }
       $("messageInput").value = "";
     });
 
