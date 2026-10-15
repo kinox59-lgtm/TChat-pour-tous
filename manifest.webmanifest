@@ -1,1 +1,27 @@
-{"name": "Tchat Pour Tous", "short_name": "Tchat Pour Tous", "start_url": "/", "display": "standalone", "background_color": "#0f1220", "theme_color": "#6c5ce7", "lang": "fr", "icons": [{"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"}, {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}
+
+{
+  "id": "/",
+  "name": "Tchat Pour Tous",
+  "short_name": "Tchat",
+  "description": "Un espace de discussion en ligne pour tous.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1220",
+  "theme_color": "#6c5ce7",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
