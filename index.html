@@ -153,7 +153,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <label for="pseudo">Pseudo</label>
   <div style="display:flex;gap:6px;align-items:center;position:relative;z-index:20;">
     <input id="pseudo" maxlength="16" autocomplete="off" placeholder="ex : Cyril_75">
-    <button type="button" class="ghost" id="rnd" title="Pseudo au hasard" style="font-size:16px; flex:none; height:43px; width:43px; display:flex; align-items:center; justify-content:center; cursor:pointer;">🎲</button>
+    <button type="button" class="ghost" id="rnd" onclick="generateRandomPseudo()" title="Pseudo au hasard" style="font-size:16px; flex:none; height:43px; width:43px; display:flex; align-items:center; justify-content:center; cursor:pointer;">🎲</button>
   </div>
 
   <div class="two">
@@ -190,7 +190,7 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
   <label for="adminpwd" style="margin-top:14px; color:var(--a1);">🔒 Mot de passe Admin (optionnel)</label>
   <input id="adminpwd" type="password" placeholder="Laisser vide si visiteur" autocomplete="new-password">
 
-  <label for="captchaval" id="captchalabel" style="margin-top:14px; font-weight:600; color:var(--a1);">🤖 Vérification humaine : combien font <span id="c1"></span> + <span id="c2"></span> ?</label>
+  <label for="captchaval" id="captchalabel" style="margin-top:14px; font-weight:600; color:var(--a1);"></label>
   <input id="captchaval" type="number" placeholder="Votre réponse" autocomplete="off" style="position:relative; z-index:20;">
 
   <label class="chk"><input type="checkbox" id="adult"> J'ai 18 ans ou plus</label>
@@ -270,14 +270,17 @@ input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
 
 <script>
 var $=function(i){return document.getElementById(i)};
-var num1 = Math.floor(Math.random() * 8) + 2;
-var num2 = Math.floor(Math.random() * 8) + 2;
+
+// Captcha : génération synchrone garantie
+var num1 = Math.floor(Math.random() * 7) + 3;
+var num2 = Math.floor(Math.random() * 7) + 2;
 var expectedCaptcha = num1 + num2;
 
-// Affichage direct et garanti des chiffres du captcha dès l'exécution du script
-if($("c1") && $("c2")) {
-    $("c1").textContent = num1;
-    $("c2").textContent = num2;
+document.getElementById("captchalabel").innerHTML = "🤖 Vérification humaine : combien font " + num1 + " + " + num2 + " ?";
+
+function generateRandomPseudo() {
+    var A=["Panda","Koala","Comète","Étoile","Citron","Pixel","Tigre","Lune","Nuage","Soleil","Cactus","Dauphin"];
+    $("pseudo").value = A[Math.floor(Math.random()*A.length)] + (10 + Math.floor(Math.random()*990));
 }
 
 (function(){
@@ -514,17 +517,6 @@ $("go").onclick=function(){
  
  creds={n:p,a:a,sx:$("sexe").value,v:$("ville").value.trim(),d:$("reg").value,r:DR[$("reg").value]||"",c:$("cher").value,o:$("ori").value,pwd:pwd};
  lsSet("tpt",JSON.stringify({c:creds,ph:myPhoto}));connect()};
-
-var rndBtn = $("rnd");
-if (rndBtn) {
-    var randomize = function(e) {
-        if(e) e.preventDefault();
-        var A=["Panda","Koala","Comète","Étoile","Citron","Pixel","Tigre","Lune","Nuage","Soleil","Cactus","Dauphin"];
-        $("pseudo").value = A[Math.floor(Math.random()*A.length)] + (10 + Math.floor(Math.random()*990));
-    };
-    rndBtn.onclick = randomize;
-    rndBtn.ontouchend = randomize;
-}
 
 (function(){var sv=null;try{sv=JSON.parse(lsGet("tpt")||"null")}catch(e){}
  if(sv&&sv.c&&sv.c.n&&sv.c.a>=18){var r=$("resume");r.style.display="flex";var b=document.createElement("button");b.type="button";b.className="btn";b.textContent="⚡ Reprendre en tant que "+sv.c.n;b.onclick=function(){creds=sv.c;myPhoto=sv.ph||null;isAdmin=(creds.n.toLowerCase()==="administrateur"&&creds.pwd==="1920459512582");connect()};
