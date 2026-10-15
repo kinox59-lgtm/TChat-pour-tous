@@ -16,7 +16,7 @@ const USERS_FILE = path.join(DATA_DIR, "users.json");
 const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(DATA_DIR, "avis.json");
 const HISTORY_FILE = path.join(DATA_DIR, "history.json");
 
-const MAX_PAYLOAD = 5 * 1024 * 1024;
+const MAX_PAYLOAD = 15 * 1024 * 1024; // Augmenté à 15 Mo pour les vidéos/audios
 const MAX_MEDIA_TOTAL = 150 * 1024 * 1024;
 const HISTORY_LIMIT = 40;
 
@@ -207,10 +207,11 @@ function addMedia(buffer, type, owner) {
 
 function parseDataURL(value) {
   if (typeof value !== "string") throw new Error("Fichier invalide.");
-  const match = /^data:(image\/jpeg|image\/png|image\/webp|video\/mp4|video\/webm|audio\/webm|audio\/ogg|audio\/wav|audio\/mp4);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
+  // Regex élargie pour accepter images, vidéos et audios
+  const match = /^data:(image\/[a-zA-Z+.-]+|video\/[a-zA-Z+.-]+|audio\/[a-zA-Z+.-]+);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
   if (!match) throw new Error("Format non accepté.");
   const buffer = Buffer.from(match[2], "base64");
-  if (!buffer.length || buffer.length > 4 * 1024 * 1024) throw new Error("Fichier trop volumineux (4 Mo max).");
+  if (!buffer.length || buffer.length > 10 * 1024 * 1024) throw new Error("Fichier trop volumineux (10 Mo max).");
   return { buffer, type: match[1] };
 }
 
@@ -520,14 +521,19 @@ wss.on("connection", (ws, req) => {
         };
 
         if (isPrivate) {
+          let found = false;
           for (const [otherSocket, otherClient] of clients) {
             if (otherClient.n.toLocaleLowerCase("fr") === mediaMsg.to.toLocaleLowerCase("fr")) {
               send(otherSocket, mediaMsg);
               send(ws, mediaMsg);
-              return;
+              found = true;
+              break;
             }
           }
-          deleteMedia(mediaId);
+          if (!found) {
+            deleteMedia(mediaId);
+            send(ws, { t: "err", x: "Destinataire hors ligne." });
+          }
         } else {
           addHistory(client.s, mediaMsg);
           broadcastSalon(client.s, mediaMsg);
