@@ -217,8 +217,8 @@ wss.on("connection", (ws, req) => {
       return;
     }
 
-    if (m.t === "msg" || m.t === "img" || m.t === "media") {
-      const x = String(m.x || "").trim();
+if (m.t === "msg" || m.t === "img") {
+  const x = String(m.x || "").trim();
       if (!x) return;
       const now = Date.now();
       c.stamps = c.stamps.filter((t) => now - t < 5000);
