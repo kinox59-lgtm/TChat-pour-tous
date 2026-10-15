@@ -351,6 +351,8 @@
 
     .modal-card {
       width: min(100%, 480px);
+      max-height: 85vh;
+      overflow-y: auto;
       background: white;
       border-radius: 18px;
       padding: 24px;
@@ -519,12 +521,43 @@
             <input id="age" type="number" min="18" max="99" required placeholder="18">
           </div>
           <div class="field">
-            <label for="gender">Genre</label>
+            <label for="gender">Genre (facultatif)</label>
             <select id="gender">
               <option value="">Non précisé</option>
               <option value="H">Homme</option>
               <option value="F">Femme</option>
               <option value="T">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="city">Ville ou région (facultatif)</label>
+          <input id="city" maxlength="20" placeholder="Ville ou région">
+        </div>
+
+        <div class="field">
+          <label for="department">Département (facultatif)</label>
+          <input id="department" maxlength="3" placeholder="Ex. 75">
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="lookingFor">Recherche (facultatif)</label>
+            <select id="lookingFor">
+              <option value="">Non précisé</option>
+              <option value="H">Hommes</option>
+              <option value="F">Femmes</option>
+              <option value="T">Tout le monde</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="orientation">Orientation (facultatif)</label>
+            <select id="orientation">
+              <option value="">Non précisée</option>
+              <option value="hetero">Hétéro</option>
+              <option value="homo">Homo</option>
+              <option value="bi">Bi</option>
             </select>
           </div>
         </div>
@@ -561,8 +594,15 @@
       if (savedProfile.p) $("password").value = savedProfile.p;
       if (savedProfile.a) $("age").value = savedProfile.a;
       if (savedProfile.sx) $("gender").value = savedProfile.sx;
+      if (savedProfile.v) $("city").value = savedProfile.v;
+      if (savedProfile.d) $("department").value = savedProfile.d;
+      if (savedProfile.c) $("lookingFor").value = savedProfile.c;
+      if (savedProfile.o) $("orientation").value = savedProfile.o;
 
-      // Affiche ou masque la case "Créer un compte" selon si un mot de passe est saisi
+      if ($("password").value.trim().length > 0) {
+        $("registerWrapper").classList.remove("hidden");
+      }
+
       $("password").addEventListener("input", () => {
         if ($("password").value.trim().length > 0) {
           $("registerWrapper").classList.remove("hidden");
@@ -747,6 +787,10 @@
         p: $("password").value,
         a: $("age").value,
         sx: $("gender").value,
+        v: $("city").value.trim(),
+        d: $("department").value.trim(),
+        c: $("lookingFor").value,
+        o: $("orientation").value,
         register: $("isRegisterCheckbox").checked
       };
       localStorage.setItem("coco_profile", JSON.stringify(profile));
@@ -765,7 +809,7 @@
       const text = $("messageInput").value.trim();
       if (!text) return;
       socket.send(JSON.stringify({ t: privateTarget ? "pm" : "msg", to: privateTarget, x: text }));
-      $("messageInput"].value = "";
+      $("messageInput").value = "";
     });
 
     const salonsFallback = ["Général", "18-25 ans", "26-40 ans", "Musique", "Jeux vidéo", "Détente", "Avis & idées"];
