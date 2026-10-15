@@ -4,67 +4,455 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#6658e8">
+  <meta name="description" content="Coco Tchat : salons de discussion et messages en temps réel.">
   <link rel="manifest" href="/manifest.webmanifest">
   <title>Coco Tchat</title>
+
+  <!-- Script Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
   <style>
     :root {
       color-scheme: light;
-      --primary: #6658e8; --primary-dark: #5144c8;
-      --bg: #f4f5fb; --panel: #fff; --text: #22243a;
-      --muted: #777b91; --border: #e8e9f2; --danger: #d83c56; --radius: 16px;
+      --primary: #6658e8;
+      --primary-dark: #5144c8;
+      --bg: #f4f5fb;
+      --panel: #fff;
+      --text: #22243a;
+      --muted: #777b91;
+      --border: #e8e9f2;
+      --danger: #d83c56;
+      --radius: 16px;
     }
+
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    button, input, textarea, select { font: inherit; cursor: pointer; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
     .hidden { display: none !important; }
-    .topbar { min-height: 64px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; background: var(--panel); border-bottom: 1px solid var(--border); }
-    .brand { font-weight: 850; font-size: 23px; color: var(--primary); }
+
+    .topbar {
+      min-height: 64px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-weight: 850;
+      font-size: 23px;
+      letter-spacing: -.7px;
+      color: var(--primary);
+    }
+
     .brand span { color: var(--text); }
-    .status { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
-    .dot { width: 9px; height: 9px; border-radius: 50%; background: #9ba0b5; display: inline-block; }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #9ba0b5;
+      display: inline-block;
+    }
+
     .dot.online { background: #2cb67d; }
-    .app { max-width: 1450px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: 225px minmax(0, 1fr) 240px; gap: 16px; min-height: calc(100vh - 64px); }
-    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+
+    .app {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 225px minmax(0, 1fr) 240px;
+      gap: 16px;
+      min-height: calc(100vh - 64px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-width: 0;
+      overflow: hidden;
+    }
+
     .side { padding: 16px; }
-    .section-title { font-size: 12px; font-weight: 800; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; margin: 4px 0 12px; }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin: 4px 0 12px;
+    }
+
     .salon-list { display: grid; gap: 6px; }
-    .salon-btn { width: 100%; text-align: left; padding: 10px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--text); }
+
+    .salon-btn {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+    }
+
     .salon-btn:hover { background: #f3f1ff; }
-    .salon-btn.active { background: #eeebff; color: var(--primary-dark); font-weight: 750; }
-    .side-action { width: 100%; margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: white; text-align: left; }
-    .chat { display: flex; flex-direction: column; min-height: 72vh; max-height: calc(100vh - 96px); }
-    .chat-head { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
-    .message { display: flex; gap: 9px; align-items: flex-start; max-width: 95%; }
+
+    .salon-btn.active {
+      background: #eeebff;
+      color: var(--primary-dark);
+      font-weight: 750;
+    }
+
+    .side-action {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      text-align: left;
+    }
+
+    .side-action:hover { background: #f8f7ff; }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      min-height: 72vh;
+      max-height: calc(100vh - 96px);
+    }
+
+    .chat-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-head h1 { font-size: 18px; margin: 0; }
+    .chat-head p { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+
+    .messages {
+      flex: 1;
+      min-height: 250px;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      max-width: 95%;
+    }
+
     .message.mine { align-self: flex-end; flex-direction: row-reverse; }
     .message.system { max-width: 100%; align-self: center; }
-    .bubble { padding: 10px 12px; border-radius: 13px; background: #f1f2f8; line-height: 1.45; overflow-wrap: anywhere; }
+
+    .bubble {
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: #f1f2f8;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
     .mine .bubble { background: #eeebff; }
-    .system .bubble { background: #f7f7fa; color: var(--muted); text-align: center; font-size: 12px; }
-    .message-meta { display: flex; gap: 7px; margin-bottom: 5px; font-size: 12px; }
+
+    .system .bubble {
+      background: #f7f7fa;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
     .message-meta strong { color: var(--primary-dark); }
-    .avatar { width: 34px; height: 34px; object-fit: cover; border-radius: 50%; background: #e9e7ff; }
-    .media-preview { display: block; max-width: min(100%, 360px); max-height: 300px; border-radius: 10px; margin-top: 5px; }
-    .composer { border-top: 1px solid var(--border); padding: 12px; }
-    .composer-row { display: flex; gap: 8px; align-items: flex-end; }
-    .composer textarea { flex: 1; resize: vertical; min-height: 44px; max-height: 150px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; outline: none; }
-    .btn { border: 0; border-radius: 10px; padding: 11px 15px; background: var(--primary); color: white; font-weight: 700; }
+    .message-meta time { color: var(--muted); font-size: 10px; }
+
+    .message-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    .message-body a {
+      color: #5144c8;
+      text-decoration: underline;
+      overflow-wrap: anywhere;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      object-fit: cover;
+      border-radius: 50%;
+      background: #e9e7ff;
+    }
+
+    .media-preview {
+      display: block;
+      max-width: min(100%, 360px);
+      max-height: 300px;
+      border-radius: 10px;
+      margin-top: 5px;
+    }
+
+    .composer {
+      border-top: 1px solid var(--border);
+      padding: 12px;
+    }
+
+    .composer-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .composer textarea {
+      flex: 1;
+      resize: vertical;
+      min-height: 44px;
+      max-height: 150px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      outline: 2px solid #6658e822;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 15px;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+
     .btn:hover { background: var(--primary-dark); }
-    .composer-extras { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .file-label { cursor: pointer; font-size: 13px; color: var(--muted); padding: 6px; }
+
+    .composer-extras {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .file-label {
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      padding: 6px;
+    }
+
     .file-label input { display: none; }
+
+    .right-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .count {
+      background: #eeebff;
+      color: var(--primary-dark);
+      border-radius: 20px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
     .user-list { display: grid; gap: 8px; }
-    .user-card { padding: 9px; border: 1px solid var(--border); border-radius: 11px; display: flex; align-items: center; gap: 8px; }
-    .user-card .user-name { font-size: 13px; font-weight: 700; }
-    .user-card .user-sub { font-size: 11px; color: var(--muted); }
-    .modal { position: fixed; inset: 0; background: #16152a99; padding: 16px; display: grid; place-items: center; z-index: 10; }
-    .modal-card { width: min(100%, 480px); background: white; border-radius: 18px; padding: 24px; }
-    .field { display: grid; gap: 6px; margin-bottom: 10px; }
-    .field input, .field select, .field textarea { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 10px; }
-    #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #25243a; color: white; padding: 12px 16px; border-radius: 12px; z-index: 30; font-size: 13px; }
+
+    .user-card {
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-card .user-name {
+      font-size: 13px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .user-card .user-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .user-card button {
+      margin-left: auto;
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 20px 5px;
+    }
+
+    .notice {
+      margin: 12px 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f1f0ff;
+      color: #5144c8;
+      font-size: 13px;
+    }
+
+    .notice.error {
+      background: #fff0f2;
+      color: #b32743;
+    }
+
+    .modal {
+      position: fixed;
+      z-index: 10;
+      inset: 0;
+      background: #16152a99;
+      padding: 16px;
+      display: grid;
+      place-items: center;
+      overflow-y: auto;
+    }
+
+    .modal-card {
+      width: min(100%, 480px);
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 20px 80px #0002;
+    }
+
+    .modal-card h2 { margin: 0 0 8px; font-size: 23px; }
+    .modal-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+    .form-grid { display: grid; gap: 12px; }
+
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 700; }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .fine-print {
+      font-size: 11px !important;
+      color: var(--muted);
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 12px;
+    }
+
+    #toast {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: #25243a;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: calc(100% - 32px);
+      box-shadow: 0 5px 25px #0002;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1000px) {
+      .app { grid-template-columns: 190px minmax(0, 1fr); }
+      .right-side { grid-column: 1 / -1; }
+      .right-side .user-list { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+      .chat { max-height: 75vh; }
+    }
+
+    @media (max-width: 650px) {
+      .topbar { padding: 11px 14px; }
+      .brand { font-size: 20px; }
+      .app { display: flex; flex-direction: column; padding: 9px; gap: 10px; }
+      .side { padding: 12px; }
+      .salon-list { display: flex; overflow-x: auto; gap: 6px; }
+      .salon-btn { white-space: nowrap; width: auto; flex: 0 0 auto; }
+      .side-action { width: auto; margin-right: 5px; }
+      .chat { min-height: 62vh; max-height: 75vh; }
+      .messages { padding: 12px; }
+      .right-side .user-list { grid-template-columns: 1fr 1fr; }
+      .right-side { padding: 12px; }
+      .composer { padding: 9px; }
+      .btn { padding: 10px 12px; }
+      .message { max-width: 100%; }
+    }
   </style>
 </head>
+
 <body>
   <header class="topbar">
     <div class="brand">Coco <span>Tchat</span></div>
@@ -99,8 +487,8 @@
         <span id="onlineCount" class="count">0 en ligne</span>
       </header>
 
-      <div id="notice" class="notice hidden"></div>
-      <div id="messages" class="messages">
+      <div id="notice" class="notice hidden" role="status"></div>
+      <div id="messages" class="messages" aria-live="polite">
         <div class="empty">Connecte-toi pour rejoindre la discussion.</div>
       </div>
 
@@ -110,34 +498,118 @@
           <button id="sendBtn" class="btn" type="submit">Envoyer</button>
         </div>
         <div class="composer-extras">
-          <label class="file-label">📎 Image/Vidéo<input id="mediaInput" type="file" accept="image/*,video/*"></label>
-          <label class="file-label">📸 Photo<input id="cameraInput" type="file" accept="image/jpeg" capture="environment"></label>
-          <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0;">🎤 <span id="voiceText">Audio</span></button>
+          <label class="file-label">
+            📎 Image ou vidéo
+            <input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm">
+          </label>
+          <label class="file-label">
+            📸 Prendre une photo
+            <input id="cameraInput" type="file" accept="image/jpeg" capture="environment">
+          </label>
+          <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer;">
+            🎤 <span id="voiceText">Audio</span>
+          </button>
+          <span class="fine-print">Fichiers temporaires, taille limitée.</span>
         </div>
       </form>
     </section>
 
-    <aside class="panel side">
-      <div class="section-title">Connectés</div>
-      <div id="userList" class="user-list"></div>
+    <aside class="panel side right-side">
+      <div class="right-head">
+        <div class="section-title" style="margin:0">Connectés</div>
+        <span id="userCount" class="count">0</span>
+      </div>
+      <div id="userList" class="user-list">
+        <div class="empty">La liste apparaîtra après connexion.</div>
+      </div>
     </aside>
   </main>
 
+  <footer class="footer">
+    Coco Tchat · Respect, sécurité et convivialité
+  </footer>
+
+  <!-- Modal de connexion -->
   <div id="loginModal" class="modal">
     <section class="modal-card">
       <h2>Bienvenue sur Coco Tchat 👋</h2>
+      <p>Choisis un pseudo et renseigne les informations demandées pour accéder aux salons.</p>
+
+      <div id="loginNotice" class="notice hidden" role="alert"></div>
+
       <form id="loginForm" class="form-grid">
-        <div class="field"><label>Pseudo</label><input id="nickname" maxlength="16" required></div>
-        <div class="field"><label>Âge</label><input id="age" type="number" min="18" max="99" required></div>
-        <div class="field"><label>Clé de modération (admin)</label><input id="adminKey" type="password" placeholder="Laisse vide si non admin"></div>
+        <div class="field">
+          <label for="nickname">Pseudo</label>
+          <input id="nickname" maxlength="16" minlength="2" autocomplete="nickname" required placeholder="Ton pseudo">
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="age">Âge</label>
+            <input id="age" type="number" min="18" max="99" required>
+          </div>
+          <div class="field">
+            <label for="gender">Genre (facultatif)</label>
+            <select id="gender">
+              <option value="">Non précisé</option>
+              <option value="H">Homme</option>
+              <option value="F">Femme</option>
+              <option value="T">Autre</option>
+              <option value="Autre">Préfère ne pas préciser</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="city">Ville ou région (facultatif)</label>
+          <input id="city" maxlength="20" placeholder="Ville ou région">
+        </div>
+
+        <div class="field">
+          <label for="department">Département (facultatif)</label>
+          <input id="department" maxlength="3" placeholder="Ex. 75">
+        </div>
+
+        <div class="field">
+          <label for="lookingFor">Recherche (facultatif)</label>
+          <select id="lookingFor">
+            <option value="">Non précisé</option>
+            <option value="H">Hommes</option>
+            <option value="F">Femmes</option>
+            <option value="HF">Hommes et femmes</option>
+            <option value="T">Tout le monde</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="orientation">Orientation (facultatif)</label>
+          <select id="orientation">
+            <option value="">Non précisée</option>
+            <option value="hetero">Hétéro</option>
+            <option value="homo">Homo</option>
+            <option value="bi">Bi</option>
+            <option value="autre">Autre / préfère ne pas préciser</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="adminKey">Clé de modération (facultatif)</label>
+          <input id="adminKey" type="password" autocomplete="off" placeholder="Laisse vide si tu n'es pas modérateur">
+        </div>
+
         <div class="cf-turnstile" data-sitekey="0x4AAAAAAFXj08CLWxiKawxa" style="margin: 8px 0;"></div>
-        <label><input id="acceptRules" type="checkbox" required> J'ai 18 ans et j'accepte les règles.</label>
-        <button class="btn" type="submit" style="width:100%; margin-top:10px;">Entrer</button>
+
+        <label style="font-size:13px;display:flex;gap:9px;align-items:flex-start">
+          <input id="acceptRules" type="checkbox" required style="margin-top:3px">
+          <span>Je confirme avoir 18 ans ou plus et j'accepte les règles de respect et de sécurité du tchat.</span>
+        </label>
+
+        <button class="btn" type="submit" style="width:100%; margin-top:10px;">Entrer dans le tchat</button>
       </form>
     </section>
   </div>
 
-  <div id="toast" class="hidden"></div>
+  <div id="toast" class="hidden" role="status"></div>
 
   <script>
     "use strict";
@@ -145,6 +617,17 @@
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
     let friends = JSON.parse(localStorage.getItem("coco_friends") || "[]");
     let isAdmin = false;
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedProfile = JSON.parse(localStorage.getItem("coco_profile") || "{}");
+      if (savedProfile.n) $("nickname").value = savedProfile.n;
+      if (savedProfile.a) $("age").value = savedProfile.a;
+      if (savedProfile.sx) $("gender").value = savedProfile.sx;
+      if (savedProfile.v) $("city").value = savedProfile.v;
+      if (savedProfile.d) $("department").value = savedProfile.d;
+      if (savedProfile.c) $("lookingFor").value = savedProfile.c;
+      if (savedProfile.o) $("orientation").value = savedProfile.o;
+    });
 
     function toast(msg) {
       const el = $("toast"); el.textContent = msg; el.classList.remove("hidden");
@@ -228,21 +711,24 @@
     }
 
     $("adminPanelBtn").addEventListener("click", () => {
-      const key = prompt("Entrez votre clé de modération pour ouvrir le panel :");
-      if (key) {
-        window.open("/admin?key=" + encodeURIComponent(key), "_blank");
-      }
+      const key = prompt("Entrez votre clé de modération :");
+      if (key) window.open("/admin?key=" + encodeURIComponent(key), "_blank");
     });
 
     $("loginForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const token = document.querySelector('[name="cf-turnstile-response"]')?.value || "";
-      openSocket({
+      const profile = {
         n: $("nickname").value.trim(),
         a: $("age").value,
-        adminKey: $("adminKey").value,
-        token
-      });
+        sx: $("gender").value,
+        v: $("city").value.trim(),
+        d: $("department").value.trim(),
+        c: $("lookingFor").value,
+        o: $("orientation").value
+      };
+      localStorage.setItem("coco_profile", JSON.stringify(profile));
+      openSocket({ ...profile, adminKey: $("adminKey").value, token });
     });
 
     $("composer").addEventListener("submit", (e) => {
