@@ -323,6 +323,58 @@
 
     .avatar-pick { display: flex; align-items: center; gap: 12px; }
 
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 20px;
+      padding: 5px 9px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .chip.on { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+
+    .age-filter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .age-filter input, .search-input {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .search-input { margin-bottom: 10px; text-align: left; }
+
+    .group-title {
+      font-size: 12px;
+      font-weight: 800;
+      margin: 10px 0 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .group-title.F { color: #e0457f; }
+    .group-title.H { color: #2f7fe0; }
+    .group-title.T { color: #d98a00; }
+    .group-title.X { color: var(--muted); }
+
+    .user-card.F .avatar { box-shadow: 0 0 0 2px #ff5fa2; }
+    .user-card.H .avatar { box-shadow: 0 0 0 2px #3b9cff; }
+    .user-card.T .avatar { box-shadow: 0 0 0 2px #f5a623; }
+
+    .user-name .age { font-weight: 400; color: var(--muted); font-size: 12px; }
+
     .right-head {
       display: flex;
       align-items: center;
@@ -536,6 +588,20 @@
         <div class="section-title" style="margin:0">Connectés</div>
         <span id="userCount" class="count">0</span>
       </div>
+      <div class="chips" id="sexChips">
+        <button type="button" class="chip on" data-f="all">🌐 Tous</button>
+        <button type="button" class="chip" data-f="F">♀ Filles</button>
+        <button type="button" class="chip" data-f="H">♂ Garçons</button>
+        <button type="button" class="chip" data-f="T">⚧ Trans</button>
+        <button type="button" class="chip" data-f="me">💘 Pour moi</button>
+      </div>
+      <div class="age-filter">
+        <span>Âge</span>
+        <input id="ageMin" type="number" min="18" max="99" placeholder="18">
+        <span>à</span>
+        <input id="ageMax" type="number" min="18" max="99" placeholder="99">
+      </div>
+      <input id="userSearch" class="search-input" placeholder="🔍 Chercher quelqu'un…" autocomplete="off">
       <div id="userList" class="user-list">
         <div class="empty">La liste apparaîtra après connexion.</div>
       </div>
@@ -608,7 +674,7 @@
               <option value="">Non précisé</option>
               <option value="H">Homme</option>
               <option value="F">Femme</option>
-              <option value="T">Autre</option>
+              <option value="T">Transgenre</option>
             </select>
           </div>
         </div>
@@ -794,6 +860,8 @@
 
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
     let friends = [];
+    let filterSex = "all";
+    let myLookingFor = "";
     let isAdmin = false;
     let mediaRecorder = null;
     let audioChunks = [];
@@ -986,28 +1054,72 @@
       box.scrollTop = box.scrollHeight;
     }
 
+    function sexKey(u) { return u.sx === "F" ? "F" : u.sx === "H" ? "H" : u.sx === "T" ? "T" : "X"; }
+
+    const LOOK = { H: "des hommes", F: "des femmes", T: "tout le monde" };
+    const ORI = { hetero: "hétéro", homo: "homo", bi: "bi" };
+
+    function matchesMe(u) {
+      if (!myLookingFor || myLookingFor === "T") return true;
+      return u.sx === myLookingFor;
+    }
+
+    function passesFilters(u) {
+      if ((filterSex === "F" || filterSex === "H" || filterSex === "T") && u.sx !== filterSex) return false;
+      if (filterSex === "me" && !matchesMe(u)) return false;
+      const lo = parseInt($("ageMin").value, 10);
+      const hi = parseInt($("ageMax").value, 10);
+      if (!isNaN(lo) && (u.a || 0) < lo) return false;
+      if (!isNaN(hi) && (u.a || 0) > hi) return false;
+      const q = $("userSearch").value.trim().toLowerCase();
+      if (q && u.n.toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }
+
+    function userCard(u) {
+      const card = document.createElement("div");
+      card.className = "user-card " + sexKey(u);
+      const isF = friends.includes(u.n);
+      const place = [u.v, u.d].filter(Boolean).join(" · ");
+      const wants = [u.c && LOOK[u.c] ? "cherche " + LOOK[u.c] : "", u.o && ORI[u.o] ? ORI[u.o] : ""].filter(Boolean).join(" · ");
+
+      card.innerHTML = `
+        <div class="uc-main" style="min-width:0; flex:1; cursor:pointer;">
+          <div class="user-name">${esc(u.n)}<span class="age">${u.a ? " · " + esc(u.a) + " ans" : ""}</span></div>
+          <div class="user-sub">📍 ${esc(place || "non précisé")} — #${esc(u.s)}</div>
+          ${wants ? `<div class="user-sub">🔎 ${esc(wants)}</div>` : ""}
+        </div>
+        <button class="uc-fav" style="border:0; background:none; cursor:pointer; font-size:16px;">${isF ? '⭐' : '☆'}</button>
+      `;
+      card.insertBefore(avatarEl(u.n, u.i, u.p || 0, 44), card.firstChild);
+      card.querySelector(".uc-main").addEventListener("click", () => startPrivateChat(u.n));
+      card.querySelector(".uc-fav").addEventListener("click", () => toggleFriend(u.n));
+      return card;
+    }
+
     function renderOnline() {
       const list = $("userList");
       if (!list) return;
       list.replaceChildren();
-      onlineUsers.forEach(u => {
-        if (u.n === myName) return;
-        const card = document.createElement("div");
-        card.className = "user-card";
-        const isF = friends.includes(u.n);
-        
-        card.innerHTML = `
-          <div class="uc-main" style="min-width:0; flex:1; cursor:pointer;">
-            <div class="user-name">${esc(u.n)}</div>
-            <div class="user-sub">${esc(u.s)}</div>
-          </div>
-          <button class="uc-fav" style="border:0; background:none; cursor:pointer; font-size:16px;">${isF ? '⭐' : '☆'}</button>
-        `;
-        card.insertBefore(avatarEl(u.n, u.i, u.p || 0, 44), card.firstChild);
-        card.querySelector(".uc-main").addEventListener("click", () => startPrivateChat(u.n));
-        card.querySelector(".uc-fav").addEventListener("click", () => toggleFriend(u.n));
-        list.appendChild(card);
+
+      const others = onlineUsers.filter(u => u.n !== myName);
+      const shown = others.filter(passesFilters);
+      const groups = [["F", "♀ Filles"], ["H", "♂ Garçons"], ["T", "⚧ Transgenres"], ["X", "Non précisé"]];
+
+      groups.forEach(([key, label]) => {
+        const members = shown.filter(u => sexKey(u) === key).sort((x, y) => x.n.localeCompare(y.n, "fr"));
+        if (!members.length) return;
+        const title = document.createElement("div");
+        title.className = "group-title " + key;
+        title.innerHTML = `<span>${label}</span><span>${members.length}</span>`;
+        list.appendChild(title);
+        members.forEach(u => list.appendChild(userCard(u)));
       });
+
+      if (!shown.length) {
+        list.innerHTML = '<div class="empty">' + (others.length ? "Personne ne correspond à ces filtres." : "Personne d'autre pour l'instant.") + '</div>';
+      }
+
       $("userCount").textContent = onlineUsers.length;
       $("onlineCount").textContent = onlineUsers.filter(u => u.s === currentSalon).length + " en ligne";
 
@@ -1135,6 +1247,7 @@
         register: $("isRegisterCheckbox").checked
       };
       localStorage.setItem("coco_profile", JSON.stringify(profile));
+      myLookingFor = profile.c;
       openSocket({ ...profile, adminKey: $("adminKey").value, token });
     });
 
@@ -1159,6 +1272,15 @@
       }
       $("messageInput").value = "";
     });
+
+    document.querySelectorAll("#sexChips .chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        filterSex = chip.dataset.f;
+        document.querySelectorAll("#sexChips .chip").forEach(c => c.classList.toggle("on", c === chip));
+        renderOnline();
+      });
+    });
+    ["ageMin", "ageMax", "userSearch"].forEach(id => $(id).addEventListener("input", renderOnline));
 
     const salonsFallback = ["Général", "18-25 ans", "26-40 ans", "Musique", "Jeux vidéo", "Détente", "Avis & idées"];
     const sList = $("salonList");

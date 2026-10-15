@@ -149,7 +149,7 @@ function systemMessage(salon, message) {
 
 function pushOnline() {
   const list = [...clients.values()].slice(0, 300).map((c) => ({
-    n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av, s: c.s
+    n: c.n, a: c.a, sx: c.sx, v: c.v, d: c.d, c: c.c, o: c.o, i: c.id, p: c.av, s: c.s
   }));
 
   for (const ws of clients.keys()) {
@@ -456,6 +456,9 @@ wss.on("connection", (ws, req) => {
         a: age,
         sx: ["H", "F", "T"].includes(message.sx) ? message.sx : "",
         v: clean(message.v, 20),
+        d: /^(2[AB]|\d{2,3})$/.test(clean(message.d, 3)) ? clean(message.d, 3) : "",
+        c: ["H", "F", "T"].includes(message.c) ? message.c : "",
+        o: ["hetero", "homo", "bi"].includes(message.o) ? message.o : "",
         s: validSalon(message.s) ? message.s : SALONS[0],
         key, admin, id: crypto.randomBytes(6).toString("hex"), av: 0, since: now,
         lowerName: password ? lowerName : null
