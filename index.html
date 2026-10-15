@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#6658e8">
   <meta name="description" content="Coco Tchat : salons de discussion et messages en temps réel.">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -88,6 +88,13 @@
       min-height: calc(100vh - 64px);
     }
 
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        padding: 8px;
+      }
+    }
+
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -167,6 +174,7 @@
       flex-direction: column;
       gap: 12px;
       scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
     .message {
@@ -219,6 +227,7 @@
     .composer {
       border-top: 1px solid var(--border);
       padding: 12px;
+      background: var(--panel);
     }
 
     .composer-row {
@@ -229,9 +238,9 @@
 
     .composer textarea {
       flex: 1;
-      resize: vertical;
+      resize: none;
       min-height: 44px;
-      max-height: 150px;
+      max-height: 120px;
       padding: 12px;
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -320,11 +329,6 @@
       background: #f1f0ff;
       color: #5144c8;
       font-size: 13px;
-    }
-
-    .notice.error {
-      background: #fff0f2;
-      color: #b32743;
     }
 
     .pm-banner {
@@ -456,22 +460,22 @@
 
       <form id="composer" class="composer hidden">
         <div class="composer-row">
-          <textarea id="messageInput" maxlength="1000" placeholder="Écris ton message… (tape @pseudo pour mentionner)"></textarea>
+          <textarea id="messageInput" maxlength="1000" placeholder="Écris ton message…"></textarea>
           <button id="sendBtn" class="btn" type="submit">Envoyer</button>
         </div>
         <div class="composer-extras">
           <label class="file-label">
-            📎 Image, Vidéo ou Audio
+            📎 Fichier
             <input id="mediaInput" type="file" accept="image/*,video/*,audio/*">
           </label>
           <label class="file-label">
-            📸 Photo / Vidéo caméra
+            📸 Caméra
             <input id="cameraInput" type="file" accept="image/*,video/*" capture="environment">
           </label>
           <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer; color:var(--primary); font-weight:bold;">
-            🎤 <span id="voiceText">Enregistrer un vocal</span>
+            🎤 <span id="voiceText">Vocal</span>
           </button>
-          <span class="fine-print">Taille max : 10 Mo.</span>
+          <span class="fine-print">Max 10 Mo</span>
         </div>
       </form>
     </section>
@@ -488,7 +492,7 @@
   </main>
 
   <footer class="footer">
-    Coco Tchat · Respect, sécurité et convivialité
+    Coco Tchat · Convivialité et sécurité
   </footer>
 
   <div id="loginModal" class="modal">
@@ -712,6 +716,7 @@
 
     function renderMessage(msg) {
       const box = $("messages");
+      if (!box) return;
       const div = document.createElement("div");
       const isMe = (msg.n === myName || msg.from === myName);
       div.className = "message" + (isMe ? " mine" : "");
@@ -734,6 +739,7 @@
 
     function renderOnline() {
       const list = $("userList");
+      if (!list) return;
       list.replaceChildren();
       onlineUsers.forEach(u => {
         if (u.n === myName) return;
@@ -830,17 +836,17 @@
 
           mediaRecorder.start();
           isRecording = true;
-          $("voiceText").textContent = "Arrêter & Envoyer";
+          $("voiceText").textContent = "Arrêter";
           toast("Enregistrement vocal en cours...");
         } catch (err) {
-          alert("Impossible d'accéder au microphone : " + err.message);
+          alert("Microphone non disponible : " + err.message);
         }
       } else {
         if (mediaRecorder) {
           mediaRecorder.stop();
         }
         isRecording = false;
-        $("voiceText").textContent = "Enregistrer un vocal";
+        $("voiceText").textContent = "Vocal";
       }
     });
 
