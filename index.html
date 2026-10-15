@@ -83,6 +83,7 @@
       <div id="friendsList" class="user-list" style="margin-bottom:12px;"></div>
 
       <div class="section-title">Communauté</div>
+      <button id="adminPanelBtn" class="side-action hidden" type="button" style="background:#eeebff; color:#5144c8; font-weight:bold;">🛡️ Panneau Admin</button>
       <button id="feedbackBtn" class="side-action" type="button">💡 Donner mon avis</button>
       <button id="rulesBtn" class="side-action" type="button">📋 Règles du tchat</button>
       <button id="profileBtn" class="side-action" type="button">🖼️ Changer mon avatar</button>
@@ -128,7 +129,7 @@
       <form id="loginForm" class="form-grid">
         <div class="field"><label>Pseudo</label><input id="nickname" maxlength="16" required></div>
         <div class="field"><label>Âge</label><input id="age" type="number" min="18" max="99" required></div>
-        <div class="field"><label>Clé de modération (admin)</label><input id="adminKey" type="password"></div>
+        <div class="field"><label>Clé de modération (admin)</label><input id="adminKey" type="password" placeholder="Laisse vide si non admin"></div>
         <div class="cf-turnstile" data-sitekey="0x4AAAAAAFXj08CLWxiKawxa" style="margin: 8px 0;"></div>
         <label><input id="acceptRules" type="checkbox" required> J'ai 18 ans et j'accepte les règles.</label>
         <button class="btn" type="submit" style="width:100%; margin-top:10px;">Entrer</button>
@@ -143,6 +144,7 @@
     const $ = id => document.getElementById(id);
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
     let friends = JSON.parse(localStorage.getItem("coco_friends") || "[]");
+    let isAdmin = false;
 
     function toast(msg) {
       const el = $("toast"); el.textContent = msg; el.classList.remove("hidden");
@@ -168,15 +170,17 @@
         const msg = JSON.parse(e.data);
         if (msg.t === "init") {
           myName = msg.n; myId = msg.i;
+          isAdmin = msg.admin === true;
           $("loginModal").classList.add("hidden");
           $("messages").replaceChildren();
           msg.hist.forEach(renderMessage);
           connected = true;
           $("composer").classList.remove("hidden");
           $("disconnectBtn").classList.remove("hidden");
+          $("adminPanelBtn").classList.toggle("hidden", !isAdmin);
+          toast("Bienvenue " + myName + " !");
         } else if (msg.t === "msg" || msg.t === "pm") {
           renderMessage(msg);
-          // Notification de mention @pseudo
           if (msg.x && msg.x.includes("@" + myName)) {
             toast("💬 Vous avez été mentionné par " + msg.n);
             if (navigator.vibrate) navigator.vibrate(200);
@@ -195,7 +199,16 @@
       const box = $("messages");
       const div = document.createElement("div");
       div.className = "message" + (msg.n === myName ? " mine" : "");
-      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${msg.n}</strong></div><div>${msg.x || ""}</div></div>`;
+      
+      let mediaHtml = "";
+      if (msg.media && msg.media.id) {
+        const url = "/media/" + msg.media.id;
+        if (msg.media.k === "img") mediaHtml = `<img src="${url}" class="media-preview" loading="lazy">`;
+        else if (msg.media.k === "vid") mediaHtml = `<video src="${url}" controls class="media-preview"></video>`;
+        else if (msg.media.k === "aud") mediaHtml = `<audio src="${url}" controls class="media-preview"></audio>`;
+      }
+
+      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${msg.n}</strong></div><div>${msg.x || ""}</div>${mediaHtml}</div>`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
@@ -213,6 +226,13 @@
         list.appendChild(card);
       });
     }
+
+    $("adminPanelBtn").addEventListener("click", () => {
+      const key = prompt("Entrez votre clé de modération pour ouvrir le panel :");
+      if (key) {
+        window.open("/admin?key=" + encodeURIComponent(key), "_blank");
+      }
+    });
 
     $("loginForm").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -233,7 +253,6 @@
       $("messageInput").value = "";
     });
 
-    // Initialisation salons
     const salonsFallback = ["Général", "18-25 ans", "26-40 ans", "Musique", "Jeux vidéo", "Détente", "Avis & idées"];
     const sList = $("salonList");
     salonsFallback.forEach(s => {
