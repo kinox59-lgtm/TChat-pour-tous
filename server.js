@@ -280,7 +280,7 @@ function parseDataURL(value) {
     throw new Error("Fichier invalide.");
   }
 
-  const match = /^data:(image\/jpeg|image\/png|image\/webp|video\/mp4|video\/webm);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
+  const match = /^data:(image\/jpeg|image\/png|image\/webp|video\/mp4|video\/webm|audio\/webm|audio\/ogg|audio\/wav|audio\/mp4);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
 
   if (!match) {
     throw new Error("Format de fichier non accepté.");
@@ -301,7 +301,11 @@ function mimeExtension(type) {
     "image/png": "png",
     "image/webp": "webp",
     "video/mp4": "mp4",
-    "video/webm": "webm"
+    "video/webm": "webm",
+    "audio/webm": "weba",
+    "audio/ogg": "ogg",
+    "audio/wav": "wav",
+    "audio/mp4": "m4a"
   })[type] || "bin";
 }
 
@@ -395,7 +399,7 @@ const server = http.createServer((req, res) => {
     return res.end("ok");
   }
 
-  if (pathname === "/media/" + pathname.split("/").pop()) {
+  if (pathname.startsWith("/media/")) {
     const match = /^\/media\/([a-f0-9]{32})$/.exec(pathname);
 
     if (match) {
@@ -583,7 +587,6 @@ wss.on("connection", (ws, req) => {
         });
       }
 
-      // Vérification du jeton Turnstile
       const turnstileValid = await verifyTurnstile(message.token, clientIp);
       if (!turnstileValid) {
         return send(ws, {
@@ -772,7 +775,11 @@ wss.on("connection", (ws, req) => {
       try {
         const parsed = parseDataURL(message.d);
         const mediaId = addMedia(parsed.buffer, parsed.type, client.id);
-        const kind = parsed.type.startsWith("image/") ? "img" : "vid";
+        
+        let kind = "vid";
+        if (parsed.type.startsWith("image/")) kind = "img";
+        else if (parsed.type.startsWith("audio/")) kind = "aud";
+
         const isPrivate = Boolean(message.to);
         const mediaMessage = {
           t: isPrivate ? "pm" : "msg",
