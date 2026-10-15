@@ -16,7 +16,7 @@ const USERS_FILE = path.join(DATA_DIR, "users.json");
 const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(DATA_DIR, "avis.json");
 const HISTORY_FILE = path.join(DATA_DIR, "history.json");
 
-const MAX_PAYLOAD = 15 * 1024 * 1024; // 15 Mo pour supporter les fichiers multimédias
+const MAX_PAYLOAD = 15 * 1024 * 1024;
 const MAX_MEDIA_TOTAL = 150 * 1024 * 1024;
 const HISTORY_LIMIT = 40;
 
