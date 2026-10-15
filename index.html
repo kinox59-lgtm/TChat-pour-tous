@@ -275,6 +275,54 @@
 
     .file-label input { display: none; }
 
+    .avatar {
+      --sz: 40px;
+      width: var(--sz);
+      height: var(--sz);
+      border-radius: 50%;
+      flex: none;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: calc(var(--sz) * .42);
+      cursor: pointer;
+      background: #c9c6f5;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--border);
+      user-select: none;
+    }
+
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar.avatar-big { border-radius: 26px; cursor: default; }
+
+    .me-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f8f7ff;
+    }
+
+    .me-name { font-weight: 800; font-size: 15px; overflow-wrap: anywhere; }
+
+    .link-btn {
+      border: 0;
+      background: none;
+      padding: 0;
+      margin-top: 3px;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .avatar-pick { display: flex; align-items: center; gap: 12px; }
+
     .right-head {
       display: flex;
       align-items: center;
@@ -425,6 +473,8 @@
 
   <main class="app">
     <aside class="panel side">
+      <div id="meCard" class="me-card hidden"></div>
+
       <div class="section-title">Les salons</div>
       <div id="salonList" class="salon-list"></div>
 
@@ -530,6 +580,14 @@
         </div>
 
         <div class="field">
+          <label>Photo de profil (facultative)</label>
+          <div class="avatar-pick">
+            <span id="loginAvatarPreview" class="avatar" style="--sz:64px; background:#eeebff; font-size:26px;">📷</span>
+            <button type="button" class="btn" id="loginAvatarBtn" style="background:#777b91;">Choisir une photo</button>
+          </div>
+        </div>
+
+        <div class="field">
           <label for="password">Mot de passe (Optionnel)</label>
           <input id="password" type="password" autocomplete="off" placeholder="Laisse vide pour entrer sans compte">
         </div>
@@ -603,12 +661,137 @@
     </section>
   </div>
 
+  <!-- Photo agrandie -->
+  <div id="avatarModal" class="modal hidden" onclick="this.classList.add('hidden')">
+    <section class="modal-card" style="text-align:center; width:min(100%,360px);">
+      <div id="avatarBig" style="display:flex; justify-content:center;"></div>
+      <h2 id="avatarBigName" style="margin:14px 0 0;"></h2>
+      <p style="margin:6px 0 0;">Touche pour fermer</p>
+    </section>
+  </div>
+
   <div id="toast" class="hidden" role="status"></div>
 
   <script>
     "use strict";
     const $ = id => document.getElementById(id);
     const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    let pendingAvatar = "";
+
+    function colorFor(name) {
+      let h = 0;
+      const s = String(name || "?");
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+      return "hsl(" + h + ",60%,52%)";
+    }
+
+    function avatarEl(name, id, ver, size, big) {
+      const wrap = document.createElement("span");
+      wrap.className = "avatar" + (big ? " avatar-big" : "");
+      wrap.style.setProperty("--sz", size + "px");
+      wrap.dataset.id = id || "";
+      wrap.dataset.name = name || "";
+      wrap.dataset.ver = String(ver || 0);
+      wrap.dataset.size = String(size);
+      const showLetter = () => {
+        wrap.replaceChildren();
+        wrap.textContent = (name || "?").charAt(0).toUpperCase();
+        wrap.style.background = colorFor(name);
+      };
+      if (id && ver > 0) {
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = "/avatar/" + id + "?v=" + ver;
+        img.onerror = showLetter;
+        wrap.appendChild(img);
+      } else {
+        showLetter();
+      }
+      if (!big) wrap.addEventListener("click", () => openAvatar(name, id, ver));
+      return wrap;
+    }
+
+    function avatarVersion(id, fallback) {
+      if (!id) return 0;
+      const u = onlineUsers.find(x => x.i === id);
+      return u ? (u.p || 0) : (fallback || 0);
+    }
+
+    function openAvatar(name, id, ver) {
+      const box = $("avatarBig");
+      box.replaceChildren(avatarEl(name, id, ver, 280, true));
+      $("avatarBigName").textContent = name || "";
+      $("avatarModal").classList.remove("hidden");
+    }
+
+    function refreshAvatars() {
+      document.querySelectorAll(".avatar[data-id]").forEach(el => {
+        const id = el.dataset.id;
+        if (!id) return;
+        const u = onlineUsers.find(x => x.i === id);
+        if (!u) return;
+        if (String(u.p || 0) !== el.dataset.ver) {
+          const big = el.classList.contains("avatar-big");
+          el.replaceWith(avatarEl(el.dataset.name, id, u.p || 0, Number(el.dataset.size), big));
+        }
+      });
+    }
+
+    function prepareAvatar(file, cb) {
+      if (!file || !file.type || file.type.indexOf("image/") !== 0) return cb(null);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const size = 320;
+          const canvas = document.createElement("canvas");
+          canvas.width = canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          const s = Math.min(img.width, img.height);
+          ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+          let q = 0.85;
+          let data = canvas.toDataURL("image/jpeg", q);
+          while (data.length > 150000 && q > 0.3) {
+            q -= 0.1;
+            data = canvas.toDataURL("image/jpeg", q);
+          }
+          cb(data.length <= 190000 ? data : null);
+        };
+        img.onerror = () => cb(null);
+        img.src = reader.result;
+      };
+      reader.onerror = () => cb(null);
+      reader.readAsDataURL(file);
+    }
+
+    function setLoginPreview() {
+      const box = $("loginAvatarPreview");
+      if (!box) return;
+      box.replaceChildren();
+      if (pendingAvatar) {
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = pendingAvatar;
+        box.appendChild(img);
+      } else {
+        box.textContent = "📷";
+      }
+    }
+
+    function renderMeCard() {
+      const card = $("meCard");
+      if (!card) return;
+      if (!connected || !myName) { card.classList.add("hidden"); return; }
+      card.classList.remove("hidden");
+      card.replaceChildren();
+      const info = document.createElement("div");
+      info.style.minWidth = "0";
+      info.innerHTML = `<div class="me-name">${esc(myName)}</div><button type="button" class="link-btn">📷 Changer ma photo</button>`;
+      info.querySelector("button").addEventListener("click", () => $("avatarFileInput").click());
+      card.appendChild(avatarEl(myName, myId, avatarVersion(myId, 0), 56));
+      card.appendChild(info);
+    }
+
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
     let friends = [];
     let isAdmin = false;
@@ -626,6 +809,10 @@
       if (savedProfile.d) $("department").value = savedProfile.d;
       if (savedProfile.c) $("lookingFor").value = savedProfile.c;
       if (savedProfile.o) $("orientation").value = savedProfile.o;
+
+      try { pendingAvatar = localStorage.getItem("coco_avatar") || ""; } catch { pendingAvatar = ""; }
+      setLoginPreview();
+      $("loginAvatarBtn").addEventListener("click", () => $("avatarFileInput").click());
 
       if ($("password").value.trim().length > 0) {
         $("registerWrapper").classList.remove("hidden");
@@ -645,10 +832,20 @@
       $("profileBtn").addEventListener("click", () => $("avatarFileInput").click());
       $("avatarFileInput").addEventListener("change", (e) => {
         const file = e.target.files[0];
-        if (file) {
-          toast("Avatar sélectionné !");
-          e.target.value = "";
-        }
+        e.target.value = "";
+        if (!file) return;
+        prepareAvatar(file, (data) => {
+          if (!data) { toast("Image illisible ou trop lourde."); return; }
+          pendingAvatar = data;
+          try { localStorage.setItem("coco_avatar", data); } catch {}
+          setLoginPreview();
+          if (connected && socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ t: "avatar", d: data }));
+            toast("Photo de profil envoyée !");
+          } else {
+            toast("Photo choisie, elle sera utilisée à ta connexion.");
+          }
+        });
       });
 
       $("loginModal").classList.remove("hidden");
@@ -695,6 +892,7 @@
       $("connectionText").textContent = label;
       $("composer").classList.toggle("hidden", !isConnected);
       $("disconnectBtn").classList.toggle("hidden", !isConnected);
+      renderMeCard();
     }
 
     function openSocket(profile) {
@@ -717,7 +915,9 @@
           msg.hist.forEach(renderMessage);
           setConnection(true, "Connecté");
           $("adminPanelBtn").classList.toggle("hidden", !isAdmin);
+          if (pendingAvatar) socket.send(JSON.stringify({ t: "avatar", d: pendingAvatar }));
           renderOnline();
+          renderMeCard();
           toast("Bienvenue " + myName + " !");
         } else if (msg.t === "err") {
           toast("⚠️ " + msg.x);
@@ -743,6 +943,8 @@
         } else if (msg.t === "online") {
           onlineUsers = msg.list;
           renderOnline();
+          refreshAvatars();
+          renderMeCard();
         } else if (msg.t === "banned") {
           alert(msg.x);
           location.reload();
@@ -773,7 +975,13 @@
       const senderName = msg.from || msg.n || "Anonyme";
       const tag = msg.t === "pm" ? " 🔒 (Privé)" : "";
 
-      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${esc(senderName)}${tag}</strong></div><div>${esc(msg.x || "")}</div>${mediaHtml}</div>`;
+      const ownerId = msg.i || msg.fid || "";
+      const ver = avatarVersion(ownerId, msg.p || msg.fp || 0);
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = `<div class="message-meta"><strong>${esc(senderName)}${tag}</strong></div><div>${esc(msg.x || "")}</div>${mediaHtml}`;
+      div.appendChild(avatarEl(senderName, ownerId, ver, 40));
+      div.appendChild(bubble);
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
@@ -795,6 +1003,7 @@
           </div>
           <button class="uc-fav" style="border:0; background:none; cursor:pointer; font-size:16px;">${isF ? '⭐' : '☆'}</button>
         `;
+        card.insertBefore(avatarEl(u.n, u.i, u.p || 0, 44), card.firstChild);
         card.querySelector(".uc-main").addEventListener("click", () => startPrivateChat(u.n));
         card.querySelector(".uc-fav").addEventListener("click", () => toggleFriend(u.n));
         list.appendChild(card);
@@ -818,6 +1027,8 @@
               </div>
               <button class="fc-del" style="border:0; background:none; cursor:pointer; color:#d83c56;">❌</button>
             `;
+            const fu = onlineUsers.find(x => x.n === fName);
+            fCard.insertBefore(avatarEl(fName, fu ? fu.i : "", fu ? (fu.p || 0) : 0, 36), fCard.firstChild);
             fCard.querySelector(".fc-main").addEventListener("click", () => startPrivateChat(fName));
             fCard.querySelector(".fc-del").addEventListener("click", () => toggleFriend(fName));
             friendsBox.appendChild(fCard);
@@ -930,6 +1141,9 @@
     $("disconnectBtn").addEventListener("click", () => {
       if (socket) socket.close();
       localStorage.removeItem("coco_profile");
+      try { localStorage.removeItem("coco_avatar"); } catch {}
+      pendingAvatar = "";
+      setLoginPreview();
       setConnection(false, "Déconnecté");
       $("loginModal").classList.remove("hidden");
     });
