@@ -12,7 +12,8 @@ const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || "";
 const SALT = process.env.SALT || crypto.randomBytes(32).toString("hex");
 const DATA_DIR = process.env.DATA_DIR || __dirname;
 const BAN_FILE = process.env.DATA_FILE || path.join(DATA_DIR, "bans.json");
-const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(DATA_DIR, "avis.json");
+const USERS_FILE = path.join(DATA_DIR, "users.json");
+const FEEDBACK_FILE = path.join(DATA_DIR, "avis.json");
 const HISTORY_FILE = path.join(DATA_DIR, "history.json");
 
 const MAX_PAYLOAD = 5 * 1024 * 1024;
@@ -55,6 +56,9 @@ if (!store || typeof store !== "object") store = { strikes: {}, bans: {} };
 if (!store.strikes) store.strikes = {};
 if (!store.bans) store.bans = {};
 
+let usersDB = readJSON(USERS_FILE, {});
+if (!usersDB || typeof usersDB !== "object") usersDB = {};
+
 let feedback = readJSON(FEEDBACK_FILE, []);
 if (!Array.isArray(feedback)) feedback = [];
 
@@ -73,6 +77,7 @@ if (!histories || typeof histories !== "object") {
 }
 
 const saveBans = () => saveJSON(BAN_FILE, store);
+const saveUsers = () => saveJSON(USERS_FILE, usersDB);
 const saveFeedback = () => saveJSON(FEEDBACK_FILE, feedback);
 const saveHistories = () => saveJSON(HISTORY_FILE, histories);
 
@@ -82,6 +87,10 @@ const mediaFiles = new Map();
 
 let mediaBytes = 0;
 let onlineTimer = null;
+
+function hashPassword(password) {
+  return crypto.createHash("sha256").update(SALT + password).digest("hex");
+}
 
 async function verifyTurnstile(token, ip) {
   if (!TURNSTILE_SECRET_KEY) return true;
@@ -145,7 +154,7 @@ function pushOnline() {
   onlineTimer = setTimeout(() => {
     onlineTimer = null;
     const list = [...clients.values()].slice(0, 300).map((c) => ({
-      n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av, s: c.s, r: c.r, d: c.d, c: c.c, o: c.o
+      n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av, s: c.s
     }));
 
     for (const ws of clients.keys()) {
@@ -333,28 +342,6 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  const avatarMatch = /^\/avatar\/([a-f0-9]{12})$/.exec(pathname);
-  if (avatarMatch) {
-    const avatar = avatars.get(avatarMatch[1]);
-    if (!avatar) {
-      res.writeHead(404);
-      return res.end();
-    }
-    res.writeHead(200, { "Content-Type": "image/jpeg", "Cache-Control": "no-store" });
-    return res.end(avatar);
-  }
-
-  if (pathname === "/avis") {
-    const supplied = url.searchParams.get("key") || "";
-    const authorized = ADMIN_KEY.length > 0 && supplied.length === ADMIN_KEY.length &&
-      crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(ADMIN_KEY));
-    if (!authorized) { res.writeHead(401); return res.end("Non autorisé"); }
-
-    const rows = feedback.map(item => `<p><b>${escapeHTML(item.name)}</b>: ${escapeHTML(item.text)}</p>`).join("");
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-    return res.end(`<h1>Avis</h1>${rows}`);
-  }
-
   const staticFiles = {
     "/manifest.webmanifest": ["manifest.webmanifest", "application/manifest+json"],
     "/icon-192.png": ["icon-192.png", "image/png"],
@@ -402,25 +389,77 @@ wss.on("connection", (ws, req) => {
       if (!await verifyTurnstile(message.token, clientIp)) return send(ws, { t: "err", x: "Turnstile invalide." });
 
       const name = clean(message.n, 16);
+      const password = message.p ? String(message.p) : "";
+      const isRegister = message.register === true;
+      const lowerName = name.toLocaleLowerCase("fr");
+
+      if (!name || name.length < 2) return send(ws, { t: "err", x: "Pseudo trop court." });
+
+      let userFriends = [];
+
+      // Si l'utilisateur veut créer un compte ou se connecter avec un mot de passe
+      if (password) {
+        if (usersDB[lowerName]) {
+          // Connexion au compte existant
+          if (usersDB[lowerName].pwd !== hashPassword(password)) {
+            return send(ws, { t: "err", x: "Mot de passe incorrect." });
+          }
+          userFriends = usersDB[lowerName].friends || [];
+        } else {
+          // Inscription d'un nouveau compte
+          if (!isRegister) {
+            return send(ws, { t: "err", x: "Ce pseudo n'a pas de compte. Coche 'Créer un compte' pour l'enregistrer." });
+          }
+          usersDB[lowerName] = {
+            pwd: hashPassword(password),
+            friends: []
+          };
+          saveUsers();
+        }
+      } else if (usersDB[lowerName]) {
+        // Le pseudo existe en tant que compte protégé par mot de passe mais aucun mot de passe n'a été fourni
+        return send(ws, { t: "err", x: "Ce pseudo est protégé par un mot de passe. Entre ton mot de passe pour te connecter." });
+      }
+
       const admin = isAdminMessage(message);
 
       client = {
-        n: uniqueName(name),
+        n: uniqueName(name), // Assure l'unicité si le mode invité prend un pseudo déjà pris
         a: Number(message.a) || 18,
         sx: message.sx || "",
         v: clean(message.v, 20),
         s: validSalon(message.s) ? message.s : SALONS[0],
-        key, admin, id: crypto.randomBytes(6).toString("hex"), av: 0, since: now
+        key, admin, id: crypto.randomBytes(6).toString("hex"), av: 0, since: now,
+        lowerName: password ? lowerName : null
       };
 
       clients.set(ws, client);
-      send(ws, { t: "init", i: client.id, n: client.n, salons: SALONS, s: client.s, hist: histories[client.s] || [], admin: client.admin });
+      
+      send(ws, { 
+        t: "init", 
+        i: client.id, 
+        n: client.n, 
+        salons: SALONS, 
+        s: client.s, 
+        hist: histories[client.s] || [], 
+        admin: client.admin,
+        friends: userFriends
+      });
+
       systemMessage(client.s, client.n + " a rejoint le salon.");
       pushOnline();
       return;
     }
 
     if (!client) return;
+
+    if (message.t === "update_friends") {
+      if (client.lowerName && Array.isArray(message.friends) && usersDB[client.lowerName]) {
+        usersDB[client.lowerName].friends = message.friends.map(f => clean(f, 16));
+        saveUsers();
+      }
+      return;
+    }
 
     if (message.t === "salon") {
       const salon = clean(message.s, 40);
@@ -461,26 +500,13 @@ wss.on("connection", (ws, req) => {
 
       for (const [otherSocket, otherClient] of clients) {
         if (otherClient.n.toLocaleLowerCase("fr") === recipientName.toLocaleLowerCase("fr")) {
-          const pm = { t: "pm", from: client.n, to: otherClient.n, x: text, ts: now, fid: client.id, fp: client.av };
+          const pm = { t: "pm", from: client.n, to: otherClient.n, x: text, ts: now, fid: client.id };
           send(otherSocket, pm);
           send(ws, pm);
           return;
         }
       }
       send(ws, { t: "err", x: "Destinataire hors ligne." });
-      return;
-    }
-
-    if (message.t === "avatar") {
-      if (typeof message.d !== "string") return;
-      const match = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(message.d);
-      if (!match) return;
-      const buffer = Buffer.from(match[1], "base64");
-      if (buffer.length > 300 * 1024) return;
-      avatars.set(client.id, buffer);
-      client.av = now;
-      send(ws, { t: "avatar_ok", i: client.id, p: client.av });
-      pushOnline();
       return;
     }
 
