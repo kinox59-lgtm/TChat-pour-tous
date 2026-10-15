@@ -16,7 +16,7 @@ const USERS_FILE = path.join(DATA_DIR, "users.json");
 const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(DATA_DIR, "avis.json");
 const HISTORY_FILE = path.join(DATA_DIR, "history.json");
 
-const MAX_PAYLOAD = 15 * 1024 * 1024; // Augmenté à 15 Mo pour les vidéos/audios
+const MAX_PAYLOAD = 15 * 1024 * 1024; // 15 Mo pour supporter les fichiers multimédias
 const MAX_MEDIA_TOTAL = 150 * 1024 * 1024;
 const HISTORY_LIMIT = 40;
 
@@ -207,7 +207,6 @@ function addMedia(buffer, type, owner) {
 
 function parseDataURL(value) {
   if (typeof value !== "string") throw new Error("Fichier invalide.");
-  // Regex élargie pour accepter images, vidéos et audios
   const match = /^data:(image\/[a-zA-Z+.-]+|video\/[a-zA-Z+.-]+|audio\/[a-zA-Z+.-]+);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
   if (!match) throw new Error("Format non accepté.");
   const buffer = Buffer.from(match[2], "base64");
@@ -495,15 +494,19 @@ wss.on("connection", (ws, req) => {
       const text = clean(message.x, 1000);
       if (!recipientName || !text) return;
 
+      let found = false;
       for (const [otherSocket, otherClient] of clients) {
         if (otherClient.n.toLocaleLowerCase("fr") === recipientName.toLocaleLowerCase("fr")) {
           const pm = { t: "pm", from: client.n, to: otherClient.n, x: text, ts: now, fid: client.id };
           send(otherSocket, pm);
           send(ws, pm);
-          return;
+          found = true;
+          break;
         }
       }
-      send(ws, { t: "err", x: "Destinataire hors ligne." });
+      if (!found) {
+        send(ws, { t: "err", x: "Destinataire hors ligne." });
+      }
       return;
     }
 
