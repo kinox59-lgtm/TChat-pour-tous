@@ -608,6 +608,7 @@
   <script>
     "use strict";
     const $ = id => document.getElementById(id);
+    const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
     let friends = [];
     let isAdmin = false;
@@ -650,11 +651,7 @@
         }
       });
 
-      if (savedProfile.n) {
-        openSocket({ ...savedProfile, adminKey: "", token: "" });
-      } else {
-        $("loginModal").classList.remove("hidden");
-      }
+      $("loginModal").classList.remove("hidden");
     });
 
     function toast(msg) {
@@ -712,6 +709,7 @@
         const msg = JSON.parse(e.data);
         if (msg.t === "init") {
           myName = msg.n; myId = msg.i;
+          if (msg.s) currentSalon = msg.s;
           isAdmin = msg.admin === true;
           friends = Array.isArray(msg.friends) ? msg.friends : [];
           $("loginModal").classList.add("hidden");
@@ -723,11 +721,18 @@
           toast("Bienvenue " + myName + " !");
         } else if (msg.t === "err") {
           toast("⚠️ " + msg.x);
+          try { if (window.turnstile) window.turnstile.reset(); } catch {}
         } else if (msg.t === "feedback_ok") {
           toast(msg.x);
           $("feedbackModal").classList.add("hidden");
           $("feedbackText").value = "";
+        } else if (msg.t === "history") {
+          currentSalon = msg.s;
+          $("messages").replaceChildren();
+          (msg.hist || []).forEach(renderMessage);
+          renderOnline();
         } else if (msg.t === "msg" || msg.t === "pm") {
+          if (msg.t === "msg" && msg.s && msg.s !== currentSalon) return;
           renderMessage(msg);
           if (msg.t === "pm" && msg.from !== myName) {
             toast("💬 Message privé de " + msg.from);
@@ -768,7 +773,7 @@
       const senderName = msg.from || msg.n || "Anonyme";
       const tag = msg.t === "pm" ? " 🔒 (Privé)" : "";
 
-      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${senderName}${tag}</strong></div><div>${msg.x || ""}</div>${mediaHtml}</div>`;
+      div.innerHTML = `<div class="bubble"><div class="message-meta"><strong>${esc(senderName)}${tag}</strong></div><div>${esc(msg.x || "")}</div>${mediaHtml}</div>`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
@@ -784,15 +789,18 @@
         const isF = friends.includes(u.n);
         
         card.innerHTML = `
-          <div style="min-width:0; flex:1; cursor:pointer;" onclick="startPrivateChat('${u.n}')">
-            <div class="user-name">${u.n}</div>
-            <div class="user-sub">${u.s}</div>
+          <div class="uc-main" style="min-width:0; flex:1; cursor:pointer;">
+            <div class="user-name">${esc(u.n)}</div>
+            <div class="user-sub">${esc(u.s)}</div>
           </div>
-          <button onclick="toggleFriend('${u.n}')" style="border:0; background:none; cursor:pointer; font-size:16px;">${isF ? '⭐' : '☆'}</button>
+          <button class="uc-fav" style="border:0; background:none; cursor:pointer; font-size:16px;">${isF ? '⭐' : '☆'}</button>
         `;
+        card.querySelector(".uc-main").addEventListener("click", () => startPrivateChat(u.n));
+        card.querySelector(".uc-fav").addEventListener("click", () => toggleFriend(u.n));
         list.appendChild(card);
       });
       $("userCount").textContent = onlineUsers.length;
+      $("onlineCount").textContent = onlineUsers.filter(u => u.s === currentSalon).length + " en ligne";
 
       const friendsBox = $("friendsList");
       if (friendsBox) {
@@ -804,12 +812,14 @@
             const fCard = document.createElement("div");
             fCard.className = "user-card";
             fCard.innerHTML = `
-              <div style="min-width:0; flex:1; cursor:pointer;" onclick="startPrivateChat('${fName}')">
-                <div class="user-name">${fName}</div>
+              <div class="fc-main" style="min-width:0; flex:1; cursor:pointer;">
+                <div class="user-name">${esc(fName)}</div>
                 <div class="user-sub">Ami</div>
               </div>
-              <button onclick="toggleFriend('${fName}')" style="border:0; background:none; cursor:pointer; color:#d83c56;">❌</button>
+              <button class="fc-del" style="border:0; background:none; cursor:pointer; color:#d83c56;">❌</button>
             `;
+            fCard.querySelector(".fc-main").addEventListener("click", () => startPrivateChat(fName));
+            fCard.querySelector(".fc-del").addEventListener("click", () => toggleFriend(fName));
             friendsBox.appendChild(fCard);
           });
         }
