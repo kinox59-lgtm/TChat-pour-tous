@@ -82,11 +82,9 @@ const saveFeedback = () => saveJSON(FEEDBACK_FILE, feedback);
 const saveHistories = () => saveJSON(HISTORY_FILE, histories);
 
 const clients = new Map();
-const avatars = new Map();
 const mediaFiles = new Map();
 
 let mediaBytes = 0;
-let onlineTimer = null;
 
 function hashPassword(password) {
   return crypto.createHash("sha256").update(SALT + password).digest("hex");
@@ -148,20 +146,16 @@ function systemMessage(salon, message) {
   });
 }
 
+// Diffusion instantanée sans délai (temps réel pur)
 function pushOnline() {
-  if (onlineTimer) return;
+  const list = [...clients.values()].slice(0, 300).map((c) => ({
+    n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av, s: c.s
+  }));
 
-  onlineTimer = setTimeout(() => {
-    onlineTimer = null;
-    const list = [...clients.values()].slice(0, 300).map((c) => ({
-      n: c.n, a: c.a, sx: c.sx, v: c.v, i: c.id, p: c.av, s: c.s
-    }));
-
-    for (const ws of clients.keys()) {
-      send(ws, { t: "online", list });
-      send(ws, { t: "online_count", count: clients.size });
-    }
-  }, 80);
+  for (const ws of clients.keys()) {
+    send(ws, { t: "online", list });
+    send(ws, { t: "online_count", count: clients.size });
+  }
 }
 
 function uniqueName(name) {
@@ -218,7 +212,6 @@ function removeClient(ws) {
   const client = clients.get(ws);
   if (!client) return;
   clients.delete(ws);
-  avatars.delete(client.id);
   systemMessage(client.s, client.n + " a quitté le salon.");
   pushOnline();
 }
