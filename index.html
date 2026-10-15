@@ -573,6 +573,9 @@
             <input id="mediaInput" type="file"
               accept="image/jpeg,image/png,image/webp,video/mp4,video/webm">
           </label>
+          <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer;">
+            🎤 <span id="voiceText">Audio</span>
+          </button>
           <span class="fine-print">Fichiers temporaires, taille limitée.</span>
         </div>
       </form>
@@ -739,6 +742,10 @@
     let onlineUsers = [];
     let privateTarget = "";
     let toastTimer = null;
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recording = false;
 
     const salonsFallback = [
       "Général", "18-25 ans", "26-40 ans", "Musique",
@@ -1106,6 +1113,12 @@
             video.preload = "metadata";
             video.className = "media-preview";
             bubble.appendChild(video);
+          } else if (kind === "aud") {
+            const audio = document.createElement("audio");
+            audio.src = mediaURL;
+            audio.controls = true;
+            audio.className = "media-preview";
+            bubble.appendChild(audio);
           }
         }
       }
@@ -1296,6 +1309,58 @@
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         $("composer").requestSubmit();
+      }
+    });
+
+    // Enregistrement vocal (MediaRecorder)
+    $("voiceBtn").addEventListener("click", async () => {
+      if (!connected) return toast("Connecte-toi d'abord.");
+
+      if (!recording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            if (audioBlob.size > 3 * 1024 * 1024) {
+              toast("Message vocal trop long (3 Mo max).");
+              return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+              const payload = {
+                t: "media",
+                d: reader.result
+              };
+              if (privateTarget) payload.to = privateTarget;
+              send(payload);
+              toast("Message vocal envoyé.");
+            };
+            reader.readAsDataURL(audioBlob);
+
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          recording = true;
+          $("voiceText").textContent = "🔴 Enregistrement...";
+          $("voiceBtn").style.color = "#d83c56";
+          toast("Enregistrement en cours... Clique à nouveau pour l'envoyer.");
+        } catch (err) {
+          toast("Microphone inaccessible ou refusé.");
+        }
+      } else {
+        mediaRecorder.stop();
+        recording = false;
+        $("voiceText").textContent = "Audio";
+        $("voiceBtn").style.color = "";
       }
     });
 
