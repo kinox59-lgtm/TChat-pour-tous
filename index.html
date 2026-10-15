@@ -461,17 +461,17 @@
         </div>
         <div class="composer-extras">
           <label class="file-label">
-            📎 Image ou vidéo
-            <input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm">
+            📎 Image, Vidéo ou Audio
+            <input id="mediaInput" type="file" accept="image/*,video/*,audio/*">
           </label>
           <label class="file-label">
-            📸 Prendre une photo
-            <input id="cameraInput" type="file" accept="image/jpeg" capture="environment">
+            📸 Photo / Vidéo caméra
+            <input id="cameraInput" type="file" accept="image/*,video/*" capture="environment">
           </label>
-          <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer;">
-            🎤 <span id="voiceText">Audio</span>
+          <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer; color:var(--primary); font-weight:bold;">
+            🎤 <span id="voiceText">Enregistrer un vocal</span>
           </button>
-          <span class="fine-print">Fichiers temporaires, taille limitée.</span>
+          <span class="fine-print">Taille max : 10 Mo.</span>
         </div>
       </form>
     </section>
@@ -491,7 +491,6 @@
     Coco Tchat · Respect, sécurité et convivialité
   </footer>
 
-  <!-- Modal de connexion (Libre ou avec Compte) -->
   <div id="loginModal" class="modal">
     <section class="modal-card">
       <h2>Bienvenue sur Coco Tchat 👋</h2>
@@ -587,6 +586,9 @@
     let socket = null, connected = false, myName = "", myId = "", currentSalon = "Général", onlineUsers = [], privateTarget = "";
     let friends = [];
     let isAdmin = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
 
     window.addEventListener("DOMContentLoaded", () => {
       const savedProfile = JSON.parse(localStorage.getItem("coco_profile") || "{}");
@@ -684,9 +686,7 @@
           renderOnline();
           toast("Bienvenue " + myName + " !");
         } else if (msg.t === "err") {
-          $("loginNotice").textContent = msg.x;
-          $("loginNotice").classList.remove("hidden");
-          $("loginModal").classList.remove("hidden");
+          toast("⚠️ " + msg.x);
         } else if (msg.t === "msg" || msg.t === "pm") {
           renderMessage(msg);
           if (msg.t === "pm" && msg.from !== myName) {
@@ -773,6 +773,76 @@
         }
       }
     }
+
+    function handleFileSelected(inputElement) {
+      const file = inputElement.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        toast("Fichier trop volumineux (10 Mo max).");
+        inputElement.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({
+            t: "media",
+            to: privateTarget,
+            d: e.target.result
+          }));
+          toast("Fichier envoyé !");
+        }
+        inputElement.value = "";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    $("mediaInput").addEventListener("change", (e) => handleFileSelected(e.target));
+    $("cameraInput").addEventListener("change", (e) => handleFileSelected(e.target));
+
+    $("voiceBtn").addEventListener("click", async () => {
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                  t: "media",
+                  to: privateTarget,
+                  d: e.target.result
+                }));
+                toast("Message vocal envoyé !");
+              }
+            };
+            reader.readAsDataURL(audioBlob);
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          isRecording = true;
+          $("voiceText").textContent = "Arrêter & Envoyer";
+          toast("Enregistrement vocal en cours...");
+        } catch (err) {
+          alert("Impossible d'accéder au microphone : " + err.message);
+        }
+      } else {
+        if (mediaRecorder) {
+          mediaRecorder.stop();
+        }
+        isRecording = false;
+        $("voiceText").textContent = "Enregistrer un vocal";
+      }
+    });
 
     $("adminPanelBtn").addEventListener("click", () => {
       const key = prompt("Entrez votre clé de modération :");
