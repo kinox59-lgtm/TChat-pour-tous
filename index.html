@@ -540,7 +540,12 @@
         <button class="salon-btn active" type="button" disabled>💬 Général</button>
       </div>
 
-      <div style="margin-top:20px" class="section-title">Communauté</div>
+      <div style="margin-top:20px" class="section-title">⭐ Mes amis</div>
+      <div id="friendsList" class="user-list" style="margin-bottom:12px;">
+        <div class="empty" style="padding:10px 0;">Aucun ami enregistré.</div>
+      </div>
+
+      <div class="section-title">Communauté</div>
       <button id="feedbackBtn" class="side-action" type="button">💡 Donner mon avis</button>
       <button id="rulesBtn" class="side-action" type="button">📋 Règles du tchat</button>
       <button id="profileBtn" class="side-action" type="button">🖼️ Changer mon avatar</button>
@@ -751,10 +756,92 @@
     let audioChunks = [];
     let recording = false;
 
+    // Gestion des amis enregistrés localement sur l'appareil
+    let friends = JSON.parse(localStorage.getItem("coco_friends") || "[]");
+
     const salonsFallback = [
       "Général", "18-25 ans", "26-40 ans", "Musique",
       "Jeux vidéo", "Détente", "Avis & idées"
     ];
+
+    // Remplissage automatique du formulaire de connexion si mémorisé
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedProfile = JSON.parse(localStorage.getItem("coco_profile") || "{}");
+      if (savedProfile.n) $("nickname").value = savedProfile.n;
+      if (savedProfile.a) $("age").value = savedProfile.a;
+      if (savedProfile.sx) $("gender").value = savedProfile.sx;
+      if (savedProfile.v) $("city").value = savedProfile.v;
+      if (savedProfile.d) $("department").value = savedProfile.d;
+      if (savedProfile.c) $("lookingFor").value = savedProfile.c;
+      if (savedProfile.o) $("orientation").value = savedProfile.o;
+      
+      renderFriends();
+    });
+
+    function saveProfile(profile) {
+      localStorage.setItem("coco_profile", JSON.stringify(profile));
+    }
+
+    function toggleFriend(name) {
+      if (!name || name === myName) return;
+      const index = friends.indexOf(name);
+      if (index > -1) {
+        friends.splice(index, 1);
+        toast(name + " retiré de tes amis.");
+      } else {
+        friends.push(name);
+        toast(name + " ajouté à tes amis !");
+      }
+      localStorage.setItem("coco_friends", JSON.stringify(friends));
+      renderFriends();
+      renderOnline();
+    }
+
+    function renderFriends() {
+      const list = $("friendsList");
+      list.replaceChildren();
+
+      if (!friends.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.style.padding = "10px 0";
+        empty.textContent = "Aucun ami enregistré.";
+        list.appendChild(empty);
+        return;
+      }
+
+      friends.forEach((friendName) => {
+        const card = document.createElement("div");
+        card.className = "user-card";
+
+        const onlineUser = onlineUsers.find(u => u.n === friendName);
+        const isOnline = Boolean(onlineUser);
+
+        const details = document.createElement("div");
+        details.style.minWidth = "0";
+
+        const name = document.createElement("div");
+        name.className = "user-name";
+        name.textContent = friendName;
+
+        const sub = document.createElement("div");
+        sub.className = "user-sub";
+        sub.textContent = isOnline ? "🟢 En ligne" : "⚪ Hors ligne";
+
+        details.append(name, sub);
+        card.appendChild(details);
+
+        if (isOnline) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = "Écrire";
+          btn.addEventListener("click", () => openPrivate(friendName));
+          card.appendChild(btn);
+        }
+
+        list.appendChild(card);
+      });
+    }
 
     function toast(message) {
       const el = $("toast");
@@ -898,6 +985,7 @@
         case "online":
           onlineUsers = Array.isArray(message.list) ? message.list : [];
           renderOnline();
+          renderFriends();
           break;
 
         case "online_count":
@@ -1131,6 +1219,14 @@
         const tools = document.createElement("div");
         tools.className = "message-tools";
 
+        const isFriend = friends.includes(sender);
+
+        const friendBtn = document.createElement("button");
+        friendBtn.type = "button";
+        friendBtn.className = "tiny-btn";
+        friendBtn.textContent = isFriend ? "⭐ Retirer des amis" : "⭐ Ajouter aux amis";
+        friendBtn.addEventListener("click", () => toggleFriend(sender));
+
         const reply = document.createElement("button");
         reply.type = "button";
         reply.className = "tiny-btn";
@@ -1143,7 +1239,7 @@
         report.textContent = "Signaler";
         report.addEventListener("click", () => reportUser(sender));
 
-        tools.append(reply, report);
+        tools.append(friendBtn, reply, report);
         bubble.appendChild(tools);
       }
 
@@ -1221,11 +1317,25 @@
         card.append(avatar, details);
 
         if (user.n !== myName) {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.textContent = "Écrire";
-          button.addEventListener("click", () => openPrivate(user.n));
-          card.appendChild(button);
+          const btnGroup = document.createElement("div");
+          btnGroup.style.display = "flex";
+          btnGroup.style.gap = "4px";
+          btnGroup.style.marginLeft = "auto";
+
+          const isFriend = friends.includes(user.n);
+          const friendBtn = document.createElement("button");
+          friendBtn.type = "button";
+          friendBtn.textContent = isFriend ? "★" : "☆";
+          friendBtn.title = isFriend ? "Retirer des amis" : "Ajouter aux amis";
+          friendBtn.addEventListener("click", () => toggleFriend(user.n));
+
+          const writeBtn = document.createElement("button");
+          writeBtn.type = "button";
+          writeBtn.textContent = "Écrire";
+          writeBtn.addEventListener("click", () => openPrivate(user.n));
+
+          btnGroup.append(friendBtn, writeBtn);
+          card.appendChild(btnGroup);
         }
 
         list.appendChild(card);
@@ -1288,12 +1398,16 @@
         v: $("city").value.trim(),
         d: $("department").value.trim(),
         c: $("lookingFor").value,
-        o: $("orientation").value,
-        adminKey: $("adminKey").value,
-        token: token
+        o: $("orientation").value
       };
 
-      openSocket(profile);
+      saveProfile(profile);
+
+      openSocket({
+        ...profile,
+        adminKey: $("adminKey").value,
+        token: token
+      });
     });
 
     $("composer").addEventListener("submit", (event) => {
