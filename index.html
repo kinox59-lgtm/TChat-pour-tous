@@ -436,6 +436,7 @@
       <button id="feedbackBtn" class="side-action" type="button">💡 Donner mon avis</button>
       <button id="rulesBtn" class="side-action" type="button">📋 Règles du tchat</button>
       <button id="profileBtn" class="side-action" type="button">🖼️ Changer mon avatar</button>
+      <input id="avatarFileInput" type="file" accept="image/*" class="hidden">
       <button id="disconnectBtn" class="side-action hidden" type="button">↪ Se déconnecter</button>
     </aside>
 
@@ -638,9 +639,17 @@
         }
       });
 
-      // Gestion des boutons de la communauté
+      // Gestion des boutons de la communauté et de l'avatar
       $("rulesBtn").addEventListener("click", () => $("rulesModal").classList.remove("hidden"));
       $("feedbackBtn").addEventListener("click", () => $("feedbackModal").classList.remove("hidden"));
+      $("profileBtn").addEventListener("click", () => $("avatarFileInput").click());
+      $("avatarFileInput").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          toast("Avatar sélectionné !");
+          e.target.value = "";
+        }
+      });
 
       if (savedProfile.n) {
         openSocket({ ...savedProfile, adminKey: "", token: "" });
@@ -920,7 +929,6 @@
       e.preventDefault();
       const text = $("messageInput").value.trim();
       if (!text) return;
-      // Envoi rigoureusement séparé : si privateTarget est défini -> "pm", sinon -> "msg"
       if (privateTarget) {
         socket.send(JSON.stringify({ t: "pm", to: privateTarget, x: text }));
       } else {
