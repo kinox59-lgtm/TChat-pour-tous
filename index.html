@@ -210,23 +210,6 @@
     .message-meta strong { color: var(--primary-dark); }
     .message-meta time { color: var(--muted); font-size: 10px; }
 
-    .message-body { white-space: pre-wrap; overflow-wrap: anywhere; }
-
-    .message-body a {
-      color: #5144c8;
-      text-decoration: underline;
-      overflow-wrap: anywhere;
-    }
-
-    .avatar {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      object-fit: cover;
-      border-radius: 50%;
-      background: #e9e7ff;
-    }
-
     .media-preview {
       display: block;
       max-width: min(100%, 360px);
@@ -255,11 +238,6 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       outline: none;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--primary);
-      outline: 2px solid #6658e822;
     }
 
     .btn {
@@ -328,14 +306,6 @@
       font-size: 11px;
       color: var(--muted);
       margin-top: 3px;
-    }
-
-    .user-card button {
-      margin-left: auto;
-      border: 0;
-      background: transparent;
-      color: var(--primary);
-      font-size: 12px;
     }
 
     .empty {
@@ -425,30 +395,6 @@
       max-width: calc(100% - 32px);
       box-shadow: 0 5px 25px #0002;
       font-size: 13px;
-    }
-
-    @media (max-width: 1000px) {
-      .app { grid-template-columns: 190px minmax(0, 1fr); }
-      .right-side { grid-column: 1 / -1; }
-      .right-side .user-list { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
-      .chat { max-height: 75vh; }
-    }
-
-    @media (max-width: 650px) {
-      .topbar { padding: 11px 14px; }
-      .brand { font-size: 20px; }
-      .app { display: flex; flex-direction: column; padding: 9px; gap: 10px; }
-      .side { padding: 12px; }
-      .salon-list { display: flex; overflow-x: auto; gap: 6px; }
-      .salon-btn { white-space: nowrap; width: auto; flex: 0 0 auto; }
-      .side-action { width: auto; margin-right: 5px; }
-      .chat { min-height: 62vh; max-height: 75vh; }
-      .messages { padding: 12px; }
-      .right-side .user-list { grid-template-columns: 1fr 1fr; }
-      .right-side { padding: 12px; }
-      .composer { padding: 9px; }
-      .btn { padding: 10px 12px; }
-      .message { max-width: 100%; }
     }
   </style>
 </head>
@@ -627,6 +573,13 @@
       if (savedProfile.d) $("department").value = savedProfile.d;
       if (savedProfile.c) $("lookingFor").value = savedProfile.c;
       if (savedProfile.o) $("orientation").value = savedProfile.o;
+
+      // Si le profil est mémorisé, on se connecte automatiquement au chargement de la page
+      if (savedProfile.n && savedProfile.a) {
+        openSocket({ ...savedProfile, adminKey: "", token: "" });
+      } else {
+        $("loginModal").classList.remove("hidden");
+      }
     });
 
     function toast(msg) {
@@ -639,6 +592,14 @@
       if (idx > -1) friends.splice(idx, 1); else friends.push(name);
       localStorage.setItem("coco_friends", JSON.stringify(friends));
       renderOnline();
+    }
+
+    function setConnection(isConnected, label) {
+      connected = isConnected;
+      $("connectionDot").classList.toggle("online", isConnected);
+      $("connectionText").textContent = label;
+      $("composer").classList.toggle("hidden", !isConnected);
+      $("disconnectBtn").classList.toggle("hidden", !isConnected);
     }
 
     function openSocket(profile) {
@@ -657,9 +618,7 @@
           $("loginModal").classList.add("hidden");
           $("messages").replaceChildren();
           msg.hist.forEach(renderMessage);
-          connected = true;
-          $("composer").classList.remove("hidden");
-          $("disconnectBtn").classList.remove("hidden");
+          setConnection(true, "Connecté");
           $("adminPanelBtn").classList.toggle("hidden", !isAdmin);
           toast("Bienvenue " + myName + " !");
         } else if (msg.t === "msg" || msg.t === "pm") {
@@ -675,6 +634,11 @@
           alert(msg.x);
           location.reload();
         }
+      });
+
+      socket.addEventListener("close", () => {
+        setConnection(false, "Déconnecté");
+        $("loginModal").classList.remove("hidden");
       });
     }
 
@@ -729,6 +693,13 @@
       };
       localStorage.setItem("coco_profile", JSON.stringify(profile));
       openSocket({ ...profile, adminKey: $("adminKey").value, token });
+    });
+
+    $("disconnectBtn").addEventListener("click", () => {
+      if (socket) socket.close();
+      localStorage.removeItem("coco_profile");
+      setConnection(false, "Déconnecté");
+      $("loginModal").classList.remove("hidden");
     });
 
     $("composer").addEventListener("submit", (e) => {
