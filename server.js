@@ -83,6 +83,7 @@ const saveHistories = () => saveJSON(HISTORY_FILE, histories);
 
 const clients = new Map();
 const mediaFiles = new Map();
+const avatars = new Map();
 
 let mediaBytes = 0;
 
@@ -207,10 +208,26 @@ function parseDataURL(value) {
   return { buffer, type: match[1] };
 }
 
+function parseAvatar(value) {
+  const prefix = "data:image/jpeg;base64,";
+  if (typeof value !== "string" || !value.startsWith(prefix) || value.length > 200000) {
+    throw new Error("Photo refusée (JPEG, 150 Ko maximum).");
+  }
+  const b64 = value.slice(prefix.length);
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) throw new Error("Photo refusée.");
+  const buf = Buffer.from(b64, "base64");
+  if (buf.length < 200 || buf[0] !== 0xff || buf[1] !== 0xd8 || buf[2] !== 0xff ||
+      buf[buf.length - 2] !== 0xff || buf[buf.length - 1] !== 0xd9) {
+    throw new Error("Photo refusée (JPEG invalide).");
+  }
+  return buf;
+}
+
 function removeClient(ws) {
   const client = clients.get(ws);
   if (!client) return;
   clients.delete(ws);
+  avatars.delete(client.id);
   systemMessage(client.s, client.n + " a quitté le salon.");
   pushOnline();
 }
@@ -220,6 +237,7 @@ function disconnectBanned(key, message) {
     if (client.key !== key) continue;
     send(ws, { t: "banned", x: message });
     clients.delete(ws);
+    avatars.delete(client.id);
     try { ws.close(1008, "Accès suspendu"); } catch {}
   }
   pushOnline();
@@ -334,6 +352,23 @@ const server = http.createServer((req, res) => {
       });
       return res.end(file.buf);
     }
+  }
+
+  const avatarMatch = /^\/avatar\/([a-f0-9]{12})$/.exec(pathname);
+  if (avatarMatch) {
+    const buf = avatars.get(avatarMatch[1]);
+    if (!buf) {
+      res.writeHead(404);
+      return res.end();
+    }
+    res.writeHead(200, {
+      "Content-Type": "image/jpeg",
+      "Content-Length": buf.length,
+      "Cache-Control": "private, max-age=300",
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'"
+    });
+    return res.end(buf);
   }
 
   const staticFiles = {
@@ -452,6 +487,21 @@ wss.on("connection", (ws, req) => {
       client.stamps.push(now);
     }
 
+    if (message.t === "avatar") {
+      client.avStamps = (client.avStamps || []).filter((t) => now - t < 60000);
+      if (client.avStamps.length >= 3) return send(ws, { t: "err", x: "Trop de changements de photo, patiente un instant." });
+      client.avStamps.push(now);
+      try {
+        if (!message.d) avatars.delete(client.id);
+        else avatars.set(client.id, parseAvatar(message.d));
+        client.av++;
+        pushOnline();
+      } catch (err) {
+        send(ws, { t: "err", x: err.message });
+      }
+      return;
+    }
+
     if (message.t === "update_friends") {
       if (client.lowerName && Array.isArray(message.friends) && usersDB[client.lowerName]) {
         usersDB[client.lowerName].friends = message.friends.map(f => clean(f, 16));
@@ -486,7 +536,7 @@ wss.on("connection", (ws, req) => {
         return;
       }
 
-      const item = { t: "msg", s: client.s, n: client.n, x: text, ts: now, i: client.id, p: 0 };
+      const item = { t: "msg", s: client.s, n: client.n, x: text, ts: now, i: client.id, p: client.av };
       addHistory(client.s, item);
       broadcastSalon(client.s, item);
       return;
@@ -500,7 +550,7 @@ wss.on("connection", (ws, req) => {
       let found = false;
       for (const [otherSocket, otherClient] of clients) {
         if (otherClient.n.toLocaleLowerCase("fr") === recipientName.toLocaleLowerCase("fr")) {
-          const pm = { t: "pm", from: client.n, to: otherClient.n, x: text, ts: now, fid: client.id };
+          const pm = { t: "pm", from: client.n, to: otherClient.n, x: text, ts: now, fid: client.id, fp: client.av };
           send(otherSocket, pm);
           send(ws, pm);
           found = true;
@@ -522,7 +572,7 @@ wss.on("connection", (ws, req) => {
         const isPrivate = Boolean(message.to);
         const mediaMsg = {
           t: isPrivate ? "pm" : "msg", s: client.s, n: client.n, from: client.n,
-          to: isPrivate ? clean(message.to, 16) : "", x: "", ts: now, i: client.id, fid: client.id,
+          to: isPrivate ? clean(message.to, 16) : "", x: "", ts: now, i: client.id, p: client.av, fid: client.id, fp: client.av,
           media: { id: mediaId, k: kind }
         };
 
