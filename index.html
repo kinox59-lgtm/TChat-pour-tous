@@ -473,7 +473,7 @@ function connect(){
    if(m.from===me&&!now){show(k)}else{if(m.from!==me){beep();if(!now)pms[k].unread++}renderPeople();totalUnread()}return}
   if(m.t==="fbok"){$("fbm").style.color="var(--ok)";$("fbm").textContent="Merci ! Ton avis a bien été envoyé 🙏";$("fbx").value="";setTimeout(function(){$("fb").classList.remove("show");$("fbm").textContent=""},1600);return}
   if(m.t==="fberr"){$("fbm").style.color="var(--bad)";$("fbm").textContent=m.x;return}
-  if(m.t==="pmerr")){var k2=String(m.to).toLowerCase();if(pms[k2])addLive(pms[k2].msgs,{sys:1,x:m.x},view===k2)}};
+  if(m.t==="pmerr"){var k2=String(m.to).toLowerCase();if(pms[k2])addLive(pms[k2].msgs,{sys:1,x:m.x},view===k2)}};
  ws.onclose=function(){$("st").textContent="○ reconnexion…";if(ok&&!noRe&&tries<20){tries++;setTimeout(connect,Math.min(1000*tries,8000))}else if(!noRe){$("st").textContent="hors ligne"}};
 }
 function setPv(){var w=$("pv");w.textContent="";if(myPhoto){var im=document.createElement("img");im.className="av";im.style.setProperty("--sz","60px");im.src=myPhoto;w.appendChild(im)}else{var s=document.createElement("span");s.className="av avi";s.style.setProperty("--sz","60px");s.style.background="var(--surf2)";s.style.color="var(--muted)";s.textContent="📷";w.appendChild(s)}}
