@@ -573,6 +573,10 @@
             <input id="mediaInput" type="file"
               accept="image/jpeg,image/png,image/webp,video/mp4,video/webm">
           </label>
+          <label class="file-label">
+            📸 Prendre une photo
+            <input id="cameraInput" type="file" accept="image/jpeg" capture="environment">
+          </label>
           <button id="voiceBtn" type="button" class="file-label" style="background:none; border:0; padding:6px; cursor:pointer;">
             🎤 <span id="voiceText">Audio</span>
           </button>
@@ -1402,6 +1406,7 @@
       return canvas.toDataURL("image/jpeg", 0.72);
     }
 
+    // Gestion de la sélection de fichier (image ou vidéo)
     $("mediaInput").addEventListener("change", async (event) => {
       const file = event.target.files && event.target.files[0];
       event.target.value = "";
@@ -1452,6 +1457,37 @@
         toast("Fichier envoyé.");
       } catch (error) {
         toast(error.message || "Impossible d'envoyer ce fichier.");
+      }
+    });
+
+    // Gestion de la prise de photo directe via la caméra
+    $("cameraInput").addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+
+      if (!file) return;
+      if (!connected) return toast("Connecte-toi d'abord.");
+
+      try {
+        toast("Traitement de la photo…");
+
+        const dataURL = await prepareImage(file);
+
+        if (dataURL.length > 3_400_000) {
+          return toast("La photo est trop volumineuse.");
+        }
+
+        const payload = {
+          t: "media",
+          d: dataURL
+        };
+
+        if (privateTarget) payload.to = privateTarget;
+
+        send(payload);
+        toast("Photo envoyée.");
+      } catch (error) {
+        toast(error.message || "Impossible d'envoyer cette photo.");
       }
     });
 
