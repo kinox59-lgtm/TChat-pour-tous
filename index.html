@@ -1,646 +1,1463 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta name="google-site-verification" content="sGYgMgs3YGvobsn03yhEbYkmKpvki6Jb6rdSYebRAaE" />
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Coco Tchat - Tchat Gratuit Sans Inscription</title>
-<meta name="description" content="Rejoignez Coco Tchat pour discuter gratuitement, rapidement et sans inscription avec des personnes de toute la France. Tchat libre et instantané.">
-<meta name="theme-color" content="#6c5ce7">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Coco Tchat">
-<style>
-:root{--bg:#f3f4fb;--surf:#fff;--surf2:#eef0fa;--text:#1b1d2e;--muted:#7a7f9a;--line:#e3e6f3;--a1:#6c5ce7;--a2:#00b4d8;--ok:#2ecc71;--bad:#e5484d;--g:linear-gradient(135deg,var(--a1),var(--a2))}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1220;--surf:#171b2e;--surf2:#1f2440;--text:#eceefb;--muted:#8d93b5;--line:#272d4a}}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;overflow-x:hidden}
-body{background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button,input,select{font:inherit;color:inherit;touch-action:manipulation}
-input,select{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surf);outline:none}
-input:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 3px #6c5ce733}
-.logo{font-weight:800;font-size:20px;letter-spacing:-.3px}
-.logo b{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
-.btn{background:var(--g);color:#fff;border:0;border-radius:12px;padding:12px 18px;font-weight:600;cursor:pointer}
-.btn:hover{filter:brightness(1.08)}
-.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--muted)}
-.ghost:hover{color:var(--text);border-color:var(--a1)}
-.av{width:var(--sz,32px);height:var(--sz,32px);border-radius:50%;object-fit:cover;flex:none;display:block}
-.avi{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:calc(var(--sz,32px)*.42)}
-.avw{position:relative;flex:none}
-.dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2px solid var(--surf)}
-.dot.off{background:#aab}
-.avw.F .av{box-shadow:0 0 0 2px #ff5fa2}.avw.H .av{box-shadow:0 0 0 2px #3b9cff}.avw.X .av{box-shadow:0 0 0 2px #a78bfa}
-.chips{display:flex;gap:4px;padding:0 8px 8px;flex-wrap:wrap}
-.chip{flex:1;min-width:60px;border:1px solid var(--line);background:none;border-radius:10px;padding:6px 2px;font-size:11px;cursor:pointer;color:var(--muted);text-align:center}
-.chip.on{background:var(--g);color:#fff;border-color:transparent;font-weight:bold}
-.sec2{padding:10px 16px 4px;font-size:12px;font-weight:700;display:flex;justify-content:space-between}
-.sec2.F{color:#ff5fa2}.sec2.H{color:#3b9cff}.sec2.X{color:#a78bfa}.sec2.O{color:var(--muted)}
-.avw.T .av{box-shadow:0 0 0 2px #f5a623}.sec2.T{color:#f5a623}
-.mbox{position:relative;border-radius:12px;overflow:hidden;max-width:240px;cursor:pointer;background:#000}
-.mbox img,.mbox video{display:block;max-width:100%;max-height:280px;margin:0 auto}
-.mbox.blur img{filter:blur(24px);transform:scale(1.15)}
-.mbox .ov,.mbox.vcard{display:flex;align-items:center;justify-content:center;text-align:center;white-space:pre-line;color:#fff;font-size:12px;padding:10px}
-.mbox .ov{position:absolute;inset:0;background:#0007}
-.mbox.vcard{width:210px;height:110px;background:linear-gradient(135deg,#2b2f55,#6c5ce7)}
-.bub.med{padding:4px}.bub.med .tm{display:block;text-align:right;margin:2px 4px 0}
-.mrep{border:0;background:none;color:var(--muted);font-size:11px;cursor:pointer;margin:2px 0 0 6px;padding:0}
-.mrep:hover{color:var(--bad)}
-#att{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surf2);font-size:18px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
-#fb{display:none;position:fixed;inset:0;background:#0008;z-index:40;align-items:center;justify-content:center;padding:16px}
-#fb.show{display:flex}
-#fb .card{background:var(--surf);border-radius:18px;padding:20px;width:100%;max-width:420px;box-shadow:0 20px 50px #0004}
-#fb h3{margin:0 0 4px;background:none;color:var(--text);padding:0;font-size:18px}
-#fb p{margin:0 0 12px;color:var(--muted);font-size:13px}
-#fb textarea{width:100%;margin-top:8px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surf);color:var(--text);font:inherit;resize:vertical;outline:none}
-#fb .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-#fbm{margin-top:8px;min-height:18px;font-size:13px;color:var(--ok)}
-#pf{display:none;position:fixed;inset:0;background:#0008;z-index:40;align-items:center;justify-content:center;padding:16px}
-#pf.show{display:flex}
-#pf .card{background:var(--surf);border-radius:20px;padding:20px;width:100%;max-width:340px;text-align:center}
-#pf .av{margin:0 auto; width:160px!important; height:160px!important; font-size:48px!important; border-radius:18px!important}
-#pf h3{margin:10px 0 0;background:none;color:var(--text);padding:0;font-size:20px}
-#pf p{margin:6px 0 14px;color:var(--muted);font-size:13px;white-space:pre-line}
-#pf .acts{display:flex;gap:8px;justify-content:center}
-#rgf{margin:0 8px 6px;width:calc(100% - 16px);padding:8px 12px;font-size:13px}
-.avw,.row>.av{cursor:pointer}
-.mdl{display:none;position:fixed;inset:0;background:#0008;z-index:45;align-items:center;justify-content:center;padding:16px}
-.mdl.show{display:flex}
-.mdl .card{background:var(--surf);border-radius:20px;padding:22px;width:100%;max-width:400px;max-height:90%;overflow:auto}
-.mdl h3{margin:0 0 8px;background:none;color:var(--text);padding:0;font-size:19px}
-.mdl ol,.mdl ul{margin:8px 0 14px;padding-left:20px}.mdl li{margin:7px 0}
-.mdl .acts{display:flex;justify-content:flex-end}
-#resume{margin:10px 0 4px;display:none;gap:6px}
-#resume .btn{flex:1}
-.chk{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;cursor:pointer}.chk input{width:auto}
-.agef{display:flex;align-items:center;gap:6px;margin:0 8px 6px;font-size:13px;color:var(--muted)}
-.agef input{width:100%;padding:7px 8px;font-size:13px;text-align:center}
-.age{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
-#login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 20% 10%,#6c5ce738,transparent 50%),radial-gradient(circle at 90% 90%,#00b4d838,transparent 50%)}
-#lc{width:100%;max-width:380px;background:var(--surf);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:0 20px 50px #0002;position:relative;z-index:10}
-#lc h2{margin:6px 0 4px;font-size:22px}
-#lc p{margin:0 0 14px;color:var(--muted);font-size:13px}
-#lc label{display:block;margin:10px 0 4px;font-size:12px;font-weight:600;color:var(--muted)}
-#pic{display:flex;align-items:center;gap:12px;cursor:pointer;margin-top:6px}
-#pic .av{--sz:60px;border:2px dashed var(--line)}
-#pic span{font-size:12px;color:var(--muted)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-#lc .btn{width:100%;margin-top:18px}
-#err{color:var(--bad);min-height:18px;margin-top:10px;font-size:13px}
-#app{display:none;height:100%}
-#side{width:310px;flex:none;background:var(--surf);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.brand{padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between}
-#st{font-size:11px;color:var(--muted)}
-.sec{padding:12px 16px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);display:flex;justify-content:space-between}
-.item{display:flex;align-items:center;gap:10px;padding:8px 10px;margin:1px 8px;border-radius:12px;cursor:pointer}
-.item:hover{background:var(--surf2)}
-.item.on{background:var(--g);color:#fff}
-.item.on .sub{color:#ffffffcc}
-.item .tx{flex:1;min-width:0}
-.item .nmx{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{background:var(--bad);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700;min-width:18px;text-align:center}
-.cnt{font-size:11px;color:var(--muted)}
-.item.on .cnt{color:#fffc}
-.flag{border:0;background:none;color:var(--muted);cursor:pointer;font-size:13px;opacity:.5;padding:2px 4px}
-.flag:hover{opacity:1;color:var(--bad)}
-#q{margin:0 8px 6px;width:calc(100% - 16px);padding:8px 12px;font-size:13px}
-#people{flex:1;overflow-y:auto;padding-bottom:6px}
-#me{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--line)}
-#me .tx{flex:1;min-width:0}
-#chat{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
-#top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surf);border-bottom:1px solid var(--line);min-height:58px}
-#menu{display:none;background:none;border:0;font-size:22px;cursor:pointer;padding:0 4px}
-#ttl{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
-#ttl .h{font-weight:700;font-size:15px}
-#ttl .sub{display:block}
-.quick-reply{cursor:pointer;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:bold;text-decoration:underline}
-#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px}
-.row{display:flex;gap:8px;align-items:flex-end}
-.row.mine{justify-content:flex-end}
-.col{max-width:min(78%,520px)}
-.nm{font-size:11px;font-weight:700;margin:0 0 2px 6px;cursor:pointer}
-.bub{background:var(--surf);padding:8px 12px;border-radius:16px 16px 16px 4px;box-shadow:0 1px 2px #0001;overflow-wrap:anywhere}
-.mine .bub{background:var(--g);color:#fff;border-radius:16px 16px 4px 16px}
-.tm{font-size:10px;opacity:.55;margin-left:8px;white-space:nowrap}
-.sys{align-self:center;font-size:11px;color:var(--muted);background:var(--surf2);border-radius:20px;padding:3px 12px;margin:4px 0}
-#form{display:flex;gap:8px;padding:12px;background:var(--surf);border-top:1px solid var(--line);align-items:center}
-#txt{border-radius:24px;padding:12px 18px}
-#snd{width:46px;height:46px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:18px;cursor:pointer;flex:none}
-#shade{display:none}
-@media (max-width:760px){
- #side{position:fixed;left:0;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);width:86%;max-width:330px;z-index:20;transform:translateX(-102%);transition:transform .2s}
- #side.open{transform:none;box-shadow:0 0 40px #0006}
- #side.open~#shade{display:block;position:fixed;inset:0;background:#0006;z-index:10}
- #menu{display:block}
- .flag{opacity:.8}
-}
-#app.show{display:flex}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6658e8">
+  <meta name="description" content="Coco Tchat : salons de discussion et messages en temps réel.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <title>Coco Tchat</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --primary: #6658e8;
+      --primary-dark: #5144c8;
+      --bg: #f4f5fb;
+      --panel: #fff;
+      --text: #22243a;
+      --muted: #777b91;
+      --border: #e8e9f2;
+      --danger: #d83c56;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .hidden { display: none !important; }
+
+    .topbar {
+      min-height: 64px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-weight: 850;
+      font-size: 23px;
+      letter-spacing: -.7px;
+      color: var(--primary);
+    }
+
+    .brand span { color: var(--text); }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #9ba0b5;
+      display: inline-block;
+    }
+
+    .dot.online { background: #2cb67d; }
+
+    .app {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 225px minmax(0, 1fr) 240px;
+      gap: 16px;
+      min-height: calc(100vh - 64px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .side { padding: 16px; }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin: 4px 0 12px;
+    }
+
+    .salon-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .salon-btn {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .salon-btn:hover { background: #f3f1ff; }
+
+    .salon-btn.active {
+      background: #eeebff;
+      color: var(--primary-dark);
+      font-weight: 750;
+    }
+
+    .side-action {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      text-align: left;
+    }
+
+    .side-action:hover { background: #f8f7ff; }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      min-height: 72vh;
+      max-height: calc(100vh - 96px);
+    }
+
+    .chat-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-head h1 { font-size: 18px; margin: 0; }
+    .chat-head p { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+
+    .messages {
+      flex: 1;
+      min-height: 250px;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      max-width: 95%;
+    }
+
+    .message.mine { align-self: flex-end; flex-direction: row-reverse; }
+    .message.system { max-width: 100%; align-self: center; }
+
+    .bubble {
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: #f1f2f8;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .mine .bubble {
+      background: #eeebff;
+    }
+
+    .system .bubble {
+      background: #f7f7fa;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .message-meta strong { color: var(--primary-dark); }
+    .message-meta time { color: var(--muted); font-size: 10px; }
+
+    .message-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    .message-body a {
+      color: #5144c8;
+      text-decoration: underline;
+      overflow-wrap: anywhere;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      object-fit: cover;
+      border-radius: 50%;
+      background: #e9e7ff;
+    }
+
+    .message-tools {
+      display: flex;
+      gap: 8px;
+      margin-top: 7px;
+    }
+
+    .tiny-btn {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 2px;
+      font-size: 11px;
+    }
+
+    .tiny-btn:hover { color: var(--primary); }
+
+    .media-preview {
+      display: block;
+      max-width: min(100%, 360px);
+      max-height: 300px;
+      border-radius: 10px;
+      margin-top: 5px;
+    }
+
+    .composer {
+      border-top: 1px solid var(--border);
+      padding: 12px;
+    }
+
+    .composer-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .composer textarea {
+      flex: 1;
+      resize: vertical;
+      min-height: 44px;
+      max-height: 150px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      outline: 2px solid #6658e822;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 15px;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+
+    .btn:hover { background: var(--primary-dark); }
+
+    .btn-secondary {
+      background: #eeebff;
+      color: var(--primary-dark);
+    }
+
+    .btn-secondary:hover { background: #e3dfff; }
+
+    .btn-danger {
+      background: #fff0f2;
+      color: var(--danger);
+    }
+
+    .btn-danger:hover { background: #ffe2e7; }
+
+    .composer-extras {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .file-label {
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      padding: 6px;
+    }
+
+    .file-label input { display: none; }
+
+    .right-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .count {
+      background: #eeebff;
+      color: var(--primary-dark);
+      border-radius: 20px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .user-list { display: grid; gap: 8px; }
+
+    .user-card {
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-card .user-name {
+      font-size: 13px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .user-card .user-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .user-card button {
+      margin-left: auto;
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 20px 5px;
+    }
+
+    .notice {
+      margin: 12px 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f1f0ff;
+      color: #5144c8;
+      font-size: 13px;
+    }
+
+    .notice.error {
+      background: #fff0f2;
+      color: #b32743;
+    }
+
+    .notice.success {
+      background: #e8fbf2;
+      color: #15784e;
+    }
+
+    .modal {
+      position: fixed;
+      z-index: 10;
+      inset: 0;
+      background: #16152a99;
+      padding: 16px;
+      display: grid;
+      place-items: center;
+      overflow-y: auto;
+    }
+
+    .modal-card {
+      width: min(100%, 480px);
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 20px 80px #0002;
+    }
+
+    .modal-card h2 { margin: 0 0 8px; font-size: 23px; }
+    .modal-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+    .form-grid { display: grid; gap: 12px; }
+
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 700; }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .form-buttons button { flex: 1; }
+
+    .fine-print {
+      font-size: 11px !important;
+      color: var(--muted);
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 12px;
+    }
+
+    #toast {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: #25243a;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: calc(100% - 32px);
+      box-shadow: 0 5px 25px #0002;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1000px) {
+      .app {
+        grid-template-columns: 190px minmax(0, 1fr);
+      }
+      .right-side { grid-column: 1 / -1; }
+      .right-side .user-list {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      }
+      .chat { max-height: 75vh; }
+    }
+
+    @media (max-width: 650px) {
+      .topbar { padding: 11px 14px; }
+      .brand { font-size: 20px; }
+      .app {
+        display: flex;
+        flex-direction: column;
+        padding: 9px;
+        gap: 10px;
+      }
+      .side { padding: 12px; }
+      .salon-list {
+        display: flex;
+        overflow-x: auto;
+        gap: 6px;
+      }
+      .salon-btn {
+        white-space: nowrap;
+        width: auto;
+        flex: 0 0 auto;
+      }
+      .side-action { width: auto; margin-right: 5px; }
+      .chat {
+        min-height: 62vh;
+        max-height: 75vh;
+      }
+      .messages { padding: 12px; }
+      .right-side .user-list {
+        grid-template-columns: 1fr 1fr;
+      }
+      .right-side { padding: 12px; }
+      .composer { padding: 9px; }
+      .btn { padding: 10px 12px; }
+      .message { max-width: 100%; }
+    }
+  </style>
 </head>
+
 <body>
-<div id="login">
- <div id="lc">
-  <div class="logo">Coco <b>Tchat</b></div>
-  <h2>Bienvenue 👋</h2><p>Hétéro, homo, bi, trans… ici, tout le monde a sa place. Sans inscription.</p>
-  <div id="resume"></div>
-  <label for="pic">Photo de profil (facultative)</label>
-  <div id="pic"><div id="pv"></div><span>Touche pour choisir une photo</span></div>
-  <input id="file0" type="file" accept="image/*" style="display:none">
-  
-  <label for="pseudo">Pseudo</label>
-  <div style="display:flex;gap:6px;align-items:center;position:relative;z-index:20;">
-    <input id="pseudo" maxlength="16" autocomplete="off" placeholder="ex : Cyril_75">
-    <button type="button" class="ghost" id="rnd" onclick="generateRandomPseudo()" title="Pseudo au hasard" style="font-size:16px; flex:none; height:43px; width:43px; display:flex; align-items:center; justify-content:center; cursor:pointer;">🎲</button>
-  </div>
-
-  <div class="two">
-    <div><label for="age">Âge (18+)</label><input id="age" type="number" min="18" max="99" placeholder="18 – 99"></div>
-    <div><label for="sexe">Sexe</label><select id="sexe"><option value="H">Homme</option><option value="F">Femme</option><option value="T">Transgenre</option><option value="Autre">Autre</option></select></div>
-  </div>
-
-  <label for="ville">Ville</label><input id="ville" maxlength="20" placeholder="ex : Lyon">
-  <label for="reg">Département (et région)</label><select id="reg"></select>
-  
-  <div class="two">
-   <div>
-    <label for="cher">Je cherche</label>
-    <select id="cher">
-     <option value="">Peu importe</option>
-     <option value="H">Un homme</option>
-     <option value="F">Une femme</option>
-     <option value="HF">Les deux (HF)</option>
-     <option value="T">Une personne transgenre</option>
-    </select>
-   </div>
-   <div>
-    <label for="ori">Orientation</label>
-    <select id="ori">
-     <option value="">Je ne précise pas</option>
-     <option value="hetero">Hétéro</option>
-     <option value="homo">Homo</option>
-     <option value="bi">Bi</option>
-     <option value="autre">Autre</option>
-    </select>
-   </div>
-  </div>
-  
-  <label for="adminpwd" style="margin-top:14px; color:var(--a1);">🔒 Mot de passe Admin (optionnel)</label>
-  <input id="adminpwd" type="password" placeholder="Laisser vide si visiteur" autocomplete="new-password">
-
-  <label for="captchaval" id="captchalabel" style="margin-top:14px; font-weight:600; color:var(--a1);"></label>
-  <input id="captchaval" type="number" placeholder="Votre réponse" autocomplete="off" style="position:relative; z-index:20;">
-
-  <label class="chk"><input type="checkbox" id="adult"> J'ai 18 ans ou plus</label>
-  <button class="btn" id="go">Entrer dans le tchat</button>
-  <div id="err"></div>
-  <p style="font-size:11px;margin:0">Reste respectueux : un signalement entraîne une sanction immédiate. 📲 Astuce : ajoute le site à l'écran d'accueil de ton téléphone pour l'ouvrir comme une appli.</p>
- </div>
-</div>
-
-<div id="app">
- <aside id="side">
-  <div class="brand"><div class="logo">Coco <b>Tchat</b></div><span id="st">connexion…</span></div>
-  <div class="sec">Salons</div><div id="salons"></div>
-  <div class="item" id="sfbtn"><div class="tx nmx">🛡️ Conseils de sécurité</div></div>
-  <div class="item" id="fbbtn"><div class="tx nmx">💡 Donner mon avis</div></div>
-  <div class="item" id="contactbtn"><div class="tx nmx">✉️ Contact & Support</div></div>
-  <div class="item" id="soundbtn"><div class="tx nmx" id="soundtxt">🔊 Sons activés</div></div>
-  <div class="sec"><span>En ligne</span><span id="cnt"></span></div>
-  
-  <div class="chips" id="chips">
-   <button class="chip on" data-f="all">🌐 Tous</button>
-   <button class="chip" data-f="F">♀ Filles</button>
-   <button class="chip" data-f="H">♂ Garçons</button>
-   <button class="chip" data-f="T">⚧ Trans</button>
-   <button class="chip" data-f="HF">👫 HF</button>
-   <button class="chip" data-f="me">💘 Pour moi</button>
-  </div>
-  
-  <select id="rgf"></select>
-  <div class="agef"><span>Âge</span><input id="amin" type="number" min="18" max="99" placeholder="18"><span>à</span><input id="amax" type="number" min="18" max="99" placeholder="99"></div>
-  <input id="q" placeholder="🔍 Chercher quelqu'un…" autocomplete="off">
-  <div id="people"></div>
-  <div id="me"><div id="meav"></div><div class="tx"><div class="nmx" id="men" style="font-weight:600"></div><div class="sub" id="msub">Mon profil</div></div><button class="ghost" id="chg">📷</button><button class="ghost" id="rm">✕</button></div>
-  <input id="file" type="file" accept="image/*" style="display:none">
- </aside>
- <div id="shade"></div>
- <div id="tour" class="mdl"><div class="card"><h3>Bienvenue sur Coco Tchat 👋</h3><ol><li><b>Discute</b> dans un salon, ou touche une personne dans la liste pour lui écrire en <b>privé</b>.</li><li><b>Photos et vidéos</b> : bouton 📷 actif partout (salons et messages privés).</li><li><b>Un souci ?</b> Appuie sur ⚠ : la personne est sanctionnée tout de suite.</li><li><b>Une idée ?</b> « 💡 Donner mon avis » dans la barre.</li></ol><div class="acts"><button class="btn" id="tourok" type="button">C'est parti !</button></div></div></div>
- <div id="safe" class="mdl"><div class="card"><h3>🛡️ Rencontrer en sécurité</h3><ul><li>Ne donne jamais ton adresse, ton lieu de travail ou tes infos bancaires.</li><li>Prends le temps de discuter ici avant de te voir.</li><li>Premier rendez-vous dans un <b>lieu public</b>, de préférence en journée.</li><li>Préviens un proche : où, avec qui, à quelle heure.</li><li>N'envoie jamais d'argent, même pour une histoire touchante.</li><li>Ne partage pas de photos que tu ne voudrais pas voir circuler.</li><li>Un comportement bizarre ? Signale avec ⚠ et coupe la discussion.</li></ul><div class="acts"><button class="btn" id="safeok" type="button">Compris</button></div></div></div>
- 
- <div id="pf"><div class="card"><div id="pfi"></div><h3 id="pfn"></h3><p id="pft"></p><div class="acts"><button class="ghost" id="pfc" type="button">Fermer</button><button class="btn" id="pfm" type="button">✉ Écrire</button></div></div></div>
- <div id="fb"><div class="card"><h3>💡 Ton avis compte</h3><p>Dis-nous ce qui te plaît et ce qu'on peut améliorer pour les prochaines mises à jour.</p><select id="fbk"><option value="Idée">Une idée</option><option value="Problème">Un problème</option><option value="Compliment">Un compliment</option></select><textarea id="fbx" maxlength="500" rows="5" placeholder="Écris ici…"></textarea><div class="acts"><button class="ghost" id="fbc" type="button">Fermer</button><button class="btn" id="fbs" type="button">Envoyer</button></div><div id="fbm"></div></div></div>
- 
- <div id="contactmodal" class="mdl">
-  <div class="card">
-   <h3>✉️ Contact & Support</h3>
-   <p>Un problème avec le site ou une question ? Envoyez-nous un message, nous vous répondrons rapidement.</p>
-   <form id="contactform">
-    <label for="cemail" style="display:block;margin:10px 0 4px;font-size:12px;font-weight:600;color:var(--muted)">Votre e-mail (pour la réponse)</label>
-    <input type="email" id="cemail" required placeholder="votre@email.com" style="margin-bottom:10px;">
-    
-    <label for="cmessage" style="display:block;margin:10px 0 4px;font-size:12px;font-weight:600;color:var(--muted)">Votre message</label>
-    <textarea id="cmessage" rows="4" required placeholder="Décrivez votre souci..." style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surf);color:var(--text);font:inherit;resize:vertical;outline:none"></textarea>
-    
-    <div class="acts" style="margin-top:12px;">
-     <button type="button" class="ghost" id="contactc">Fermer</button>
-     <button type="submit" class="btn">Envoyer</button>
+  <header class="topbar">
+    <div class="brand">Coco <span>Tchat</span></div>
+    <div class="status">
+      <span id="connectionDot" class="dot"></span>
+      <span id="connectionText">Non connecté</span>
     </div>
-   </form>
-   <div id="contactmsg" style="margin-top:8px;font-size:13px;text-align:center;"></div>
+  </header>
+
+  <main class="app">
+    <aside class="panel side">
+      <div class="section-title">Les salons</div>
+      <div id="salonList" class="salon-list">
+        <button class="salon-btn active" type="button" disabled>💬 Général</button>
+      </div>
+
+      <div style="margin-top:20px" class="section-title">Communauté</div>
+      <button id="feedbackBtn" class="side-action" type="button">💡 Donner mon avis</button>
+      <button id="rulesBtn" class="side-action" type="button">📋 Règles du tchat</button>
+      <button id="profileBtn" class="side-action" type="button">🖼️ Changer mon avatar</button>
+      <button id="disconnectBtn" class="side-action hidden" type="button">↪ Se déconnecter</button>
+    </aside>
+
+    <section class="panel chat">
+      <header class="chat-head">
+        <div>
+          <h1 id="chatTitle">💬 Général</h1>
+          <p id="chatSubtitle">Les messages du salon apparaissent ici.</p>
+        </div>
+        <span id="onlineCount" class="count">0 en ligne</span>
+      </header>
+
+      <div id="notice" class="notice hidden" role="status"></div>
+      <div id="messages" class="messages" aria-live="polite">
+        <div class="empty">Connecte-toi pour rejoindre la discussion.</div>
+      </div>
+
+      <form id="composer" class="composer hidden">
+        <div class="composer-row">
+          <textarea id="messageInput" maxlength="1000"
+            placeholder="Écris ton message…" aria-label="Ton message"></textarea>
+          <button id="sendBtn" class="btn" type="submit">Envoyer</button>
+        </div>
+        <div class="composer-extras">
+          <label class="file-label">
+            📎 Image ou vidéo
+            <input id="mediaInput" type="file"
+              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm">
+          </label>
+          <span class="fine-print">Fichiers temporaires, taille limitée.</span>
+        </div>
+      </form>
+    </section>
+
+    <aside class="panel side right-side">
+      <div class="right-head">
+        <div class="section-title" style="margin:0">Connectés</div>
+        <span id="userCount" class="count">0</span>
+      </div>
+      <div id="userList" class="user-list">
+        <div class="empty">La liste apparaîtra après connexion.</div>
+      </div>
+      <p class="fine-print" style="margin-top:16px">
+        Respecte les autres. Ne partage pas d'informations personnelles.
+        Signale les comportements inappropriés.
+      </p>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    Coco Tchat · Respect, sécurité et convivialité
+  </footer>
+
+  <!-- Connexion -->
+  <div id="loginModal" class="modal">
+    <section class="modal-card">
+      <h2>Bienvenue sur Coco Tchat 👋</h2>
+      <p>Choisis un pseudo et renseigne les informations demandées pour accéder aux salons.</p>
+
+      <div id="loginNotice" class="notice hidden" role="alert"></div>
+
+      <form id="loginForm" class="form-grid">
+        <div class="field">
+          <label for="nickname">Pseudo</label>
+          <input id="nickname" maxlength="16" minlength="2"
+            autocomplete="nickname" required placeholder="Ton pseudo">
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="age">Âge</label>
+            <input id="age" type="number" min="18" max="99" required>
+          </div>
+          <div class="field">
+            <label for="gender">Genre (facultatif)</label>
+            <select id="gender">
+              <option value="">Non précisé</option>
+              <option value="H">Homme</option>
+              <option value="F">Femme</option>
+              <option value="T">Autre</option>
+              <option value="Autre">Préfère ne pas préciser</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="city">Ville ou région (facultatif)</label>
+          <input id="city" maxlength="20" placeholder="Ville ou région">
+        </div>
+
+        <div class="field">
+          <label for="department">Département (facultatif)</label>
+          <input id="department" maxlength="3" placeholder="Ex. 75">
+        </div>
+
+        <div class="field">
+          <label for="lookingFor">Recherche (facultatif)</label>
+          <select id="lookingFor">
+            <option value="">Non précisé</option>
+            <option value="H">Hommes</option>
+            <option value="F">Femmes</option>
+            <option value="HF">Hommes et femmes</option>
+            <option value="T">Tout le monde</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="orientation">Orientation (facultatif)</label>
+          <select id="orientation">
+            <option value="">Non précisée</option>
+            <option value="hetero">Hétéro</option>
+            <option value="homo">Homo</option>
+            <option value="bi">Bi</option>
+            <option value="autre">Autre / préfère ne pas préciser</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="adminKey">Clé de modération (facultatif)</label>
+          <input id="adminKey" type="password" autocomplete="off"
+            placeholder="Laisse vide si tu n'es pas modérateur">
+        </div>
+
+        <label style="font-size:13px;display:flex;gap:9px;align-items:flex-start">
+          <input id="acceptRules" type="checkbox" required style="margin-top:3px">
+          <span>Je confirme avoir 18 ans ou plus et j'accepte les règles de respect et de sécurité du tchat.</span>
+        </label>
+
+        <div class="form-buttons">
+          <button class="btn" type="submit">Entrer dans le tchat</button>
+        </div>
+      </form>
+
+      <p class="fine-print">
+        N'utilise pas ton nom complet ni un mot de passe personnel comme pseudo.
+        Ne partage jamais ton adresse, tes coordonnées ou des informations privées.
+      </p>
+    </section>
   </div>
- </div>
 
- <section id="chat">
-  <div id="top"><button id="menu">☰</button><div id="ttl"></div><button class="ghost" id="rep" style="display:none">⚠ Signaler</button></div>
-  <div id="msgs"></div>
-  <form id="form">
-   <button type="button" id="att" title="Envoyer une photo ou une vidéo">📷</button>
-   <input id="mf" type="file" accept="image/*,video/mp4,video/webm" style="display:none">
-   <div style="flex:1; position:relative; display:flex; flex-direction:column;">
-    <input id="txt" maxlength="300" autocomplete="off" placeholder="Écris un message…">
-    <span id="char-count" style="position:absolute; right:12px; bottom:-16px; font-size:10px; color:var(--muted); display:none;">0/300</span>
-   </div>
-   <button id="snd" type="submit">➤</button>
-  </form>
- </section>
-</div>
+  <!-- Avis -->
+  <div id="feedbackModal" class="modal hidden">
+    <section class="modal-card">
+      <h2>💡 Donner mon avis</h2>
+      <p>Ton retour peut aider à améliorer le site.</p>
+      <form id="feedbackForm" class="form-grid">
+        <div class="field">
+          <label for="feedbackText">Ton message</label>
+          <textarea id="feedbackText" maxlength="2000" rows="5"
+            required placeholder="Une idée, un problème ou une suggestion…"></textarea>
+        </div>
+        <div class="form-buttons">
+          <button class="btn" type="submit">Envoyer l'avis</button>
+          <button class="btn btn-secondary close-modal" type="button">Annuler</button>
+        </div>
+      </form>
+    </section>
+  </div>
 
-<script>
-var $=function(i){return document.getElementById(i)};
+  <!-- Règles -->
+  <div id="rulesModal" class="modal hidden">
+    <section class="modal-card">
+      <h2>📋 Règles de Coco Tchat</h2>
+      <p>
+        1. Le service est réservé aux personnes majeures.<br><br>
+        2. Respecte les autres utilisateurs.<br><br>
+        3. Le harcèlement, les menaces, les escroqueries et les contenus illégaux sont interdits.<br><br>
+        4. Ne partage pas d'informations personnelles, de documents privés ou de contenus sans autorisation.<br><br>
+        5. N'envoie pas de fichiers inconnus et ne clique pas sur des liens suspects.<br><br>
+        6. Les signalements doivent être faits de bonne foi. Les abus peuvent entraîner des restrictions.<br><br>
+        7. Les messages et fichiers peuvent être perdus lors d'un redémarrage du serveur.
+      </p>
+      <button class="btn close-modal" type="button">J'ai compris</button>
+    </section>
+  </div>
 
-// Captcha : génération synchrone garantie
-var num1 = Math.floor(Math.random() * 7) + 3;
-var num2 = Math.floor(Math.random() * 7) + 2;
-var expectedCaptcha = num1 + num2;
+  <div id="toast" class="hidden" role="status"></div>
 
-document.getElementById("captchalabel").innerHTML = "🤖 Vérification humaine : combien font " + num1 + " + " + num2 + " ?";
+  <script>
+    "use strict";
 
-function generateRandomPseudo() {
-    var A=["Panda","Koala","Comète","Étoile","Citron","Pixel","Tigre","Lune","Nuage","Soleil","Cactus","Dauphin"];
-    $("pseudo").value = A[Math.floor(Math.random()*A.length)] + (10 + Math.floor(Math.random()*990));
-}
+    const $ = (id) => document.getElementById(id);
 
-(function(){
-var filt="all",ws,me="",myId="",cur="",salons=[],creds=null,tries=0,ok=false,noRe=false,online=[],salonMsgs=[],salonUnread=0,pms={},view=null,myPhoto=null,isAdmin=false,lastSender=null;
-var soundEnabled = localStorage.getItem("tpt_sound") !== "off";
+    let socket = null;
+    let connected = false;
+    let myName = "";
+    let myId = "";
+    let currentSalon = "Général";
+    let isAdmin = false;
+    let onlineUsers = [];
+    let privateTarget = "";
+    let toastTimer = null;
 
-function updateSoundUI() {
-    $("soundtxt").textContent = soundEnabled ? "🔊 Sons activés" : "🔇 Sons coupés";
-}
+    const salonsFallback = [
+      "Général", "18-25 ans", "26-40 ans", "Musique",
+      "Jeux vidéo", "Détente", "Avis & idées"
+    ];
 
-$("soundbtn").onclick = function() {
-    soundEnabled = !soundEnabled;
-    localStorage.setItem("tpt_sound", soundEnabled ? "on" : "off");
-    updateSoundUI();
-};
-updateSoundUI();
-
-var SM={":)":"🙂",":-)":"🙂",":D":"😃",":(":"🙁",";)":"😉",":p":"😛",":P":"😛",":o":"😮","<3":"❤️","lol":"😂","mdr":"🤣"};
-function smileys(t){return t.split(" ").map(function(w){return SM[w]||w}).join(" ")}
-function linkify(text) {
-    if (!text) return "";
-    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-    return text.replace(exp, function(match) {
-        var cleanUrl = match.replace(/"/g, '&quot;');
-        return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; word-break:break-all;">' + match + '</a>';
-    });
-}
-function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return "hsl("+h+",60%,52%)"}
-function hhmm(ts){var d=new Date(ts||Date.now());return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
-var ac=null;
-function beep(){
-    if(!soundEnabled) return;
-    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;g.gain.value=.04;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.08)}catch(e){}
-}
-function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
-function find(n){var k=String(n).toLowerCase();for(var i=0;i<online.length;i++)if(online[i].n.toLowerCase()===k)return online[i];return null}
-
-function av(name,i,p,sz){var mk=function(){var s=document.createElement("span");s.className="av avi";s.style.setProperty("--sz",sz+"px");s.style.background=color(name);s.textContent=(name||"?").charAt(0).toUpperCase();return s};
- if(!i||!p)return mk();var im=document.createElement("img");im.className="av";im.style.setProperty("--sz",sz+"px");im.alt="";im.src="/avatar/"+i+"?v="+p;im.onerror=function(){if(im.parentNode)im.parentNode.replaceChild(mk(),im)};return im}
-function avd(name,i,p,sz,on,sx){var w=document.createElement("div");w.className="avw "+(sx==="F"?"F":sx==="H"?"H":sx==="T"?"T":"X");w.appendChild(av(name,i,p,sz));var d=document.createElement("span");d.className="dot"+(on?"":" off");w.appendChild(d);return w}
-function resize(file,cb){var fr=new FileReader();fr.onload=function(){var img=new Image();img.onload=function(){var c=document.createElement("canvas");c.width=c.height=160;var x=c.getContext("2d");var s=Math.min(img.width,img.height);x.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,160,160);var q=.7,d=c.toDataURL("image/jpeg",q);while(d.length>40000&&q>.2){q-=.15;d=c.toDataURL("image/jpeg",q)}cb(d)};img.onerror=function(){cb(null)};img.src=fr.result};fr.onerror=function(){cb(null)};fr.readAsDataURL(file)}
-
-function row(m){var d=document.createElement("div");
- if(m.sys){d.className="sys";d.textContent=m.x;return d}
- var mine=m.n===me;d.className="row"+(mine?" mine":"");
- if(!mine){var am=av(m.n,m.i,m.p,36);am.style.cursor="pointer";am.onclick=function(){openProfile(m.n)};d.appendChild(am)}
- var c=document.createElement("div");c.className="col";
- if(!mine&&view===null){var n=document.createElement("div");n.className="nm";n.style.color=color(m.n);n.textContent=m.n;n.onclick=function(){openPm(m.n)};c.appendChild(n)}
- var b=document.createElement("div");b.className="bub";if(m.media){b.classList.add("med");b.appendChild(mediaEl(m,mine))}else b.innerHTML=linkify(m.x);var t=document.createElement("span");t.className="tm";t.textContent=hhmm(m.ts);b.appendChild(t);c.appendChild(b);
- if(m.media&&!mine){var rb=document.createElement("button");rb.className="mrep";rb.textContent="⚠ Signaler";rb.onclick=function(){if(confirm("Signaler "+m.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:"report",n:m.n})};c.appendChild(rb)}
- d.appendChild(c);return d}
-function msrc(id){return (window.MED&&MED[id])||"/media/"+id}
-function mediaEl(m,mine){var w=document.createElement("div");w.className="mbox";var md=m.media;
- if(md.k==="img"){var im=document.createElement("img");im.src=msrc(md.id);im.alt="photo";w.appendChild(im);
-  if(!mine){w.classList.add("blur");var ov=document.createElement("div");ov.className="ov";ov.textContent="📷 Photo reçue\nAppuyer pour afficher";w.appendChild(ov);w.onclick=function(){w.classList.remove("blur");w.style.cursor="default";if(ov.parentNode)ov.remove()}}}
- else{var play=function(){w.textContent="";w.classList.remove("vcard");var v=document.createElement("video");v.src=msrc(md.id);v.controls=true;v.setAttribute("playsinline","");v.preload="metadata";w.appendChild(v);try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(){})}catch(e){}};
-  if(mine)play();else{w.classList.add("vcard");w.textContent="🎞 Vidéo reçue\nAppuyer pour lire";w.onclick=function(){w.onclick=null;play()}}}
- return w}
-
-function processImg(file, cb) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var img = new Image();
-        img.onload = function() {
-            var canvas = document.createElement("canvas");
-            var maxDim = 600;
-            var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-            canvas.width = Math.round(img.width * scale);
-            canvas.height = Math.round(img.height * scale);
-            var ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            var base64 = canvas.toDataURL("image/jpeg", 0.6);
-            cb(base64);
-        };
-        img.onerror = function() { cb(null); };
-        img.src = e.target.result;
-    };
-    reader.onerror = function() { cb(null); };
-    reader.readAsDataURL(file);
-}
-
-function list(){return view===null?salonMsgs:(pms[view]?pms[view].msgs:[])}
-function renderMsgs(){var b=$("msgs");b.textContent="";list().forEach(function(m){b.appendChild(row(m))});b.scrollTop=b.scrollHeight}
-function addLive(arr,m,show){arr.push(m);if(arr.length>200)arr.shift();
- if(show){var b=$("msgs"),near=b.scrollHeight-b.scrollTop-b.clientHeight<80;b.appendChild(row(m));while(b.children.length>200)b.removeChild(b.firstChild);if(near||m.n===me)b.scrollTop=b.scrollHeight}}
-function totalUnread(){var n=salonUnread;Object.keys(pms).forEach(function(k){n+=pms[k].unread});document.title=(n?"("+n+") ":"")+"Coco Tchat"}
-
-function renderTop(){
- var t=$("ttl");t.textContent="";
- if(view===null){
-  var h=document.createElement("div");var a=document.createElement("div");a.className="h";
-  if (lastSender) {
-   a.innerHTML = '💬 Dernier message de : <span class="quick-reply">' + lastSender + '</span>';
-   a.onclick = function() { openPm(lastSender); };
-  } else {
-   a.textContent = "# " + cur;
-   a.onclick = null;
-  }
-  var s=document.createElement("span");s.className="sub";s.textContent=online.filter(function(u){return u.s===cur}).length+" dans ce salon";
-  h.appendChild(a);h.appendChild(s);t.appendChild(h);$("rep").style.display="none";
- }
- else{
-  var p=pms[view],u=find(p.n);
-  var avEl = av(p.n,u?u.i:p.i,u?u.p:p.p,36);
-  avEl.style.cursor = "pointer";
-  avEl.onclick = function() { openProfile(p.n); };
-  t.appendChild(avEl);
-  var h2=document.createElement("div");var a2=document.createElement("div");a2.className="h";a2.textContent=p.n;
-  var s2=document.createElement("span");s2.className="sub";s2.textContent=u?"🔒 conversation privée":"hors ligne";
-  h2.appendChild(a2);h2.appendChild(s2);t.appendChild(h2);$("rep").style.display=u?"":"none";
- }
-}
-
-function renderSalons(){var b=$("salons");b.textContent="";
- salons.forEach(function(s){var d=document.createElement("div");d.className="item"+(s===cur&&view===null?" on":"");
-  var t=document.createElement("div");t.className="tx nmx";t.textContent="# "+s;d.appendChild(t);
-  var n=online.filter(function(u){return u.s===s}).length;var c=document.createElement("span");c.className="cnt";c.textContent=n;d.appendChild(c);
-  if(s===cur&&salonUnread){var u=document.createElement("span");u.className="badge";u.textContent=salonUnread;d.appendChild(u)}
-  d.onclick=function(){if(s!==cur)send({t:"salon",s:s});show(null);closeSide()};b.appendChild(d)})}
-function ageOk(u){var lo=parseInt($("amin").value,10),hi=parseInt($("amax").value,10);return u.a==null||((isNaN(lo)||u.a>=lo)&&(isNaN(hi)||u.a<=hi))}
-function renderPeople(){var box=$("people"),q=$("q").value.trim().toLowerCase();box.textContent="";var seen={},ons=[],offs=[];
- online.forEach(function(u){seen[u.n.toLowerCase()]=1;if(u.n!==me)ons.push(u)});
- Object.keys(pms).forEach(function(k){if(!seen[k])offs.push({n:pms[k].n,i:pms[k].i,p:pms[k].p,sx:pms[k].sx})});
- $("cnt").textContent=online.length+" connecté(s)";
- var ok2=function(u){return (!q||u.n.toLowerCase().indexOf(q)>=0)&&(!$("rgf").value||u.r===$("rgf").value)&&ageOk(u)};
- var ur=function(u){return (pms[u.n.toLowerCase()]||{}).unread||0};
- var srt=function(a,b){return ur(b)-ur(a)||a.n.localeCompare(b.n)};
- var gk=function(u){return u.sx==="F"?"F":u.sx==="H"?"H":u.sx==="T"?"T":"X"};
- var groups=[["F","♀ Filles"],["H","♂ Garçons"],["T","⚧ Transgenres"],["X","Autres"]],any=false;
- 
- groups.forEach(function(g){
-  if(filt==="F" && g[0]!=="F") return;
-  if(filt==="H" && g[0]!=="H") return;
-  if(filt==="T" && g[0]!=="T") return;
-  if(filt==="HF" && (g[0]!=="F" && g[0]!=="H")) return;
-  
-  var l=ons.filter(function(u){return gk(u)===g[0]&&ok2(u)&&(filt!=="me"||matchMe(u))}).sort(srt);if(!l.length)return;any=true;
-  var h=document.createElement("div");h.className="sec2 "+g[0];var a1=document.createElement("span");a1.textContent=g[1];var c1=document.createElement("span");c1.textContent=l.length;h.appendChild(a1);h.appendChild(c1);box.appendChild(h);
-  l.forEach(function(u){box.appendChild(mkRow(u,true,ur(u)))})
- });
- 
- if(filt==="all"){var ol=offs.filter(ok2).sort(srt);if(ol.length){any=true;var h2=document.createElement("div");h2.className="sec2 O";h2.textContent="Conversations (hors ligne)";box.appendChild(h2);ol.forEach(function(u){box.appendChild(mkRow(u,false,ur(u)))})}}
- if(!any){var e=document.createElement("div");e.className="sub";e.style.padding="10px 18px";e.textContent=q?"Personne trouvé":"Personne pour l'instant";box.appendChild(e)}}
-
-var CHL={"H":"un homme","F":"une femme","HF":"les deux","T":"une personne trans"},OL={"hetero":"hétéro","homo":"homo","bi":"bi","autre":"autre orientation"};
-function matchMe(u){var c=creds&&creds.c;if(!c)return true;if(c==="T")return u.sx==="T";return c.indexOf(u.sx)>=0}
-function mkRow(u,on,n){var k=u.n.toLowerCase(),d=document.createElement("div");d.className="item"+(view===k?" on":"");
- var aw=avd(u.n,u.i,u.p,48,on,u.sx);aw.onclick=function(e){e.stopPropagation();openProfile(u.n)};d.appendChild(aw);
- var t=document.createElement("div");t.className="tx";var a=document.createElement("div");a.className="nmx";a.textContent=u.n;
- if(on){var ag=document.createElement("span");ag.className="age";ag.textContent=u.a+" ans";a.appendChild(ag)}
- t.appendChild(a);var s1=document.createElement("div");s1.className="sub";
- if(on){var loc=locText(u);s1.textContent="📍 "+(loc||"non précisé")+" — #"+u.s}else s1.textContent="hors ligne";
- t.appendChild(s1);
- if(on&&(u.c||u.o)){var s2=document.createElement("div");s2.className="sub";s2.textContent="🔎 "+[u.c?"cherche "+CHL[u.c]:"",u.o?OL[u.o]:""].filter(Boolean).join(" · ");t.appendChild(s2)}
- d.appendChild(t);
- if(n){var b=document.createElement("span");b.className="badge";b.textContent=n;d.appendChild(b)}
- if(!on){var rmBtn=document.createElement("button");rmBtn.className="flag";rmBtn.textContent="✕";rmBtn.title="Fermer la conversation";rmBtn.onclick=function(e){e.stopPropagation();if(confirm("Fermer la conversation avec "+u.n+" ? L'historique sera effacé.")) { delete pms[k]; if(view===k) show(null); else renderPeople(); totalUnread(); }};d.appendChild(rmBtn);}
- else {var f=document.createElement("button");f.className="flag";f.textContent=isAdmin?"🔨":"⚠";f.title=isAdmin?"Bannir (Admin)":"Signaler";f.onclick=function(e){e.stopPropagation();if(confirm((isAdmin?"Bannir ":"Signaler ")+u.n+" ?\nLa personne sera sanctionnée immédiatement."))send({t:isAdmin?"admin_ban":"report",n:u.n,pwd:creds.pwd})};d.appendChild(f)}
- d.onclick=function(){openPm(u.n);closeSide()};return d}
-
-function openProfile(name){var k=String(name).toLowerCase(),u=find(name),pm=pms[k];if(!u&&!pm)return;var p=u||{n:name,i:pm.i,p:pm.p};
- var w=$("pfi");w.textContent="";var a=av(p.n,p.i,p.p,160);w.appendChild(a);$("pfn").textContent=p.n;
- var l1=u?[u.a?u.a+" ans":"",locText(u)].filter(Boolean).join(" · "):"hors ligne";
- var l2=u&&(u.c||u.o)?"\n🔎 "+[u.c?"cherche "+CHL[u.c]:"",u.o?OL[u.o]:""].filter(Boolean).join(" · "):"";
- $("pft").textContent=l1+l2;$("pfm").style.display=(p.n===me||!u)?"none":"";
- $("pfm").onclick=function(){$("pf").classList.remove("show");openPm(p.n)};$("pf").classList.add("show")}
-
-function renderMe(){var u=find(me),w=$("meav");w.textContent="";var mw=avd(me,myId,u?u.p:0,44,true,u?u.sx:"");mw.onclick=function(){openProfile(me)};w.appendChild(mw);$("men").textContent=me;if(isAdmin)$("msub").textContent="👑 Administrateur";}
-function show(k){view=k;if(k===null)salonUnread=0;else pms[k].unread=0;renderTop();renderMsgs();renderSalons();renderPeople();totalUnread();$("txt").placeholder=k===null?"Écris dans # "+cur+"…":"Message privé à "+pms[k].n+"…"}
-function openPm(name){var k=name.toLowerCase(),u=find(name);if(!pms[k])pms[k]={n:u?u.n:name,msgs:[],unread:0};if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}show(k);if(innerWidth>760)$("txt").focus()}
-function closeSide(){$("side").classList.remove("open")}
-
-function connect(){
- ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
- ws.onopen=function(){send({t:"join",n:creds.n,a:creds.a,sx:creds.sx,v:creds.v,d:creds.d,r:creds.r,c:creds.c,o:creds.o,pwd:creds.pwd})};
- ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
-  if(m.t==="err"){$("err").textContent=m.x;ws.close();return}
-  if(m.t==="banned"){noRe=true;ok=false;$("app").classList.remove("show");$("login").style.display="";$("err").textContent=m.x;return}
-  if(m.t==="init"){ok=true;tries=0;me=m.n;myId=m.i;salons=m.salons;cur=m.s;salonMsgs=m.hist.slice();$("login").style.display="none";$("app").classList.add("show");
-   $("st").textContent="● en ligne";if(!lsGet("tpt_tour")){$("tour").classList.add("show")}if(myPhoto)send({t:"avatar",d:myPhoto});renderMe();show(null);return}
-  if(m.t==="online"){online=m.list;Object.keys(pms).forEach(function(k){var u=find(pms[k].n);if(u){pms[k].i=u.i;pms[k].p=u.p;pms[k].sx=u.sx}});renderMe();renderSalons();renderPeople();renderTop();return}
-  if(m.t==="online_count" && $("#st")){$("#st").textContent = m.count+" en ligne";}                          
-  if(m.t==="salon"){cur=m.s;salonMsgs=m.hist.slice();salonUnread=0;renderSalons();renderTop();if(view===null){renderMsgs();$("txt").placeholder="Écris dans # "+cur+"…"}return}
-  if(m.t==="sys"&&m.s===cur){addLive(salonMsgs,{sys:1,x:m.x},view===null);return}
-  if(m.t==="msg"&&m.s===cur){addLive(salonMsgs,m,view===null);if(m.n!==me){beep();lastSender=m.n;renderTop();if(view!==null){salonUnread++;renderSalons();totalUnread()}}return}
-  if(m.t==="pm"){var other=m.from===me?m.to:m.from,k=other.toLowerCase();
-   if(!pms[k])pms[k]={n:other,msgs:[],unread:0};
-   if(m.from!==me){pms[k].i=m.fid;pms[k].p=m.fp;lastSender=m.from;renderTop();}
-   var now=view===k;addLive(pms[k].msgs,{n:m.from,x:m.x,ts:m.ts,i:m.fid,p:m.fp,media:m.media},now);
-   if(m.from===me&&!now){show(k)}else{if(m.from!==me){beep();if(!now)pms[k].unread++}renderPeople();totalUnread()}return}
-  if(m.t==="fbok"){$("fbm").style.color="var(--ok)";$("fbm").textContent="Merci ! Ton avis a bien été envoyé 🙏";$("fbx").value="";setTimeout(function(){$("fb").classList.remove("show");$("fbm").textContent=""},1600);return}
-  if(m.t==="fberr"){$("fbm").style.color="var(--bad)";$("fbm").textContent=m.x;return}
-  if(m.t==="pmerr"){var k2=String(m.to).toLowerCase();if(pms[k2])addLive(pms[k2].msgs,{sys:1,x:m.x},view===k2)}};
- ws.onclose=function(){$("st").textContent="○ reconnexion…";if(ok&&!noRe&&tries<20){tries++;setTimeout(connect,Math.min(1000*tries,8000))}else if(!noRe){$("st").textContent="hors ligne"}};
-}
-function setPv(){var w=$("pv");w.textContent="";if(myPhoto){var im=document.createElement("img");im.className="av";im.style.setProperty("--sz","60px");im.src=myPhoto;w.appendChild(im)}else{var s=document.createElement("span");s.className="av avi";s.style.setProperty("--sz","60px");s.style.background="var(--surf2)";s.style.color="var(--muted)";s.textContent="📷";w.appendChild(s)}}
-var DATA=["Auvergne-Rhône-Alpes|01 Ain,03 Allier,07 Ardèche,15 Cantal,26 Drôme,38 Isère,42 Loire,43 Haute-Loire,63 Puy-de-Dôme,69 Rhône,73 Savoie,74 Haute-Savoie", "Bourgogne-Franche-Comté|21 Côte-d'Or,25 Doubs,39 Jura,58 Nièvre,70 Haute-Saône,71 Saône-et-Loire,89 Yonne,90 Territoire de Belfort", "Bretagne|22 Côtes-d'Armor,29 Finistère,35 Ille-et-Vilaine,56 Morbihan", "Centre-Val de Loire|18 Cher,28 Eure-et-Loir,36 Indre,37 Indre-et-Loire,41 Loir-et-Cher,45 Loiret", "Corse|2A Corse-du-Sud,2B Haute-Corse", "Grand Est|08 Ardennes,10 Aube,51 Marne,52 Haute-Marne,54 Meurthe-et-Moselle,55 Meuse,57 Moselle,67 Bas-Rhin,68 Haut-Rhin,88 Vosges", "Hauts-de-France|02 Aisne,59 Nord,60 Oise,62 Pas-de-Calais,80 Somme", "Île-de-France|75 Paris,77 Seine-et-Marne,78 Yvelines,91 Essonne,92 Hauts-de-Seine,93 Seine-Saint-Denis,94 Val-de-Marne,95 Val-d'Oise", "Normandie|14 Calvados,27 Eure,50 Manche,61 Orne,76 Seine-Maritime", "Nouvelle-Aquitaine|16 Charente,17 Charente-Maritime,19 Corrèze,23 Creuse,24 Dordogne,33 Gironde,40 Landes,47 Lot-et-Garonne,64 Pyrénées-Atlantiques,79 Deux-Sèvres,86 Vienne,87 Haute-Vienne", "Occitanie|09 Ariège,11 Aude,12 Aveyron,30 Gard,31 Haute-Garonne,32 Gers,34 Hérault,46 Lot,48 Lozère,65 Hautes-Pyrénées,66 Pyrénées-Orientales,81 Tarn,82 Tarn-et-Garonne", "Pays de la Loire|44 Loire-Atlantique,49 Maine-et-Loire,53 Mayenne,72 Sarthe,85 Vendée", "Provence-Alpes-Côte d'Azur|04 Alpes-de-Haute-Provence,05 Hautes-Alpes,06 Alpes-Maritimes,13 Bouches-du-Rhône,83 Var,84 Vaucluse", "Guadeloupe|971 Guadeloupe", "Martinique|972 Martinique", "Guyane|973 Guyane", "La Réunion|974 La Réunion", "Mayotte|976 Mayotte", "Saint-Pierre-et-Miquelon|975 Saint-Pierre-et-Miquelon", "Saint-Barthélemy|977 Saint-Barthélemy", "Saint-Martin|978 Saint-Martin", "Wallis-et-Futuna|986 Wallis-et-Futuna", "Polynésie française|987 Polynésie française", "Nouvelle-Calédonie|988 Nouvelle-Calédonie", "Autre pays|XX Autre pays"];
-var OM={"Guadeloupe":1,"Martinique":1,"Guyane":1,"La Réunion":1,"Mayotte":1,"Saint-Pierre-et-Miquelon":1,"Saint-Barthélemy":1,"Saint-Martin":1,"Wallis-et-Futuna":1,"Polynésie française":1,"Nouvelle-Calédonie":1};
-var DR={},DN={},REGLIST=[];
-DATA.forEach(function(g){var p=g.split("|");REGLIST.push(p[0]);p[1].split(",").forEach(function(x){var i=x.indexOf(" ");DR[x.slice(0,i)]=p[0];DN[x.slice(0,i)]=x.slice(i+1)})});
-(function(){var sel=$("reg"),o=document.createElement("option");o.value="";o.textContent="— Choisis ton département —";sel.appendChild(o);var grp={},codes=Object.keys(DN),ky=function(c){return c==="2A"?20.1:c==="2B"?20.2:c==="XX"?99999:parseInt(c,10)};
- codes.sort(function(x,y){return ky(x)-ky(y)});
- codes.forEach(function(c){var label=c==="XX"?"Ailleurs":c.length>=3?"Outre-mer":"France métropolitaine",og=grp[label];if(!og){og=document.createElement("optgroup");og.label=label;grp[label]=og;sel.appendChild(og)}
-  var op=document.createElement("option");op.value=c;op.textContent=c==="XX"?"Autre pays":c+" · "+DN[c];og.appendChild(op)});
- var f=$("rgf"),o2=document.createElement("option");o2.value="";o2.textContent="🌍 Toutes les régions";f.appendChild(o2);
- REGLIST.forEach(function(r){var x=document.createElement("option");x.textContent=r;f.appendChild(x)});f.onchange=renderPeople})();
-function locText(u){var p=[];if(u.v)p.push(u.v);if(u.d&&u.d!=="XX"&&DN[u.d])p.push(DN[u.d]+" ("+u.d+")");if(u.r&&!(u.d&&DN[u.d]===u.r))p.push(u.r);return p.join(" · ")}
-
-[].slice.call(document.querySelectorAll(".chip")).forEach(function(c){c.onclick=function(){filt=c.getAttribute("data-f");[].slice.call(document.querySelectorAll(".chip")).forEach(function(x){x.classList.toggle("on",x===c)});renderPeople()}});
-setPv();
-$("pic").onclick=function(){$("file0").click()};
-$("file0").onchange=function(){var f=$("file0").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;setPv()}else $("err").textContent="Image illisible."})};
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-
-$("go").onclick=function(){
- var p=$("pseudo").value.trim();
- if(!p){$("pseudo").focus();return}
- var a=parseInt($("age").value,10);
- 
- var userAnswer = parseInt($("captchaval").value, 10);
- if (isNaN(userAnswer) || userAnswer !== expectedCaptcha) {
-  $("err").textContent = "Vérification humaine incorrecte. Réessayez le calcul (" + num1 + " + " + num2 + ").";
-  $("captchaval").focus();
-  return;
- }
-
- if(!$("adult").checked){$("err").textContent="Coche « J'ai 18 ans ou plus » pour entrer.";return}
- if(!(a>=18&&a<=99)){$("err").textContent="Entre ton âge (de 18 à 99 ans). Ce tchat est réservé aux adultes.";return}
- $("err").textContent="";
- 
- var pwd=$("adminpwd").value.trim();
- isAdmin = (p.toLowerCase() === "administrateur" && pwd === "1920459512582");
- 
- creds={n:p,a:a,sx:$("sexe").value,v:$("ville").value.trim(),d:$("reg").value,r:DR[$("reg").value]||"",c:$("cher").value,o:$("ori").value,pwd:pwd};
- lsSet("tpt",JSON.stringify({c:creds,ph:myPhoto}));connect()};
-
-(function(){var sv=null;try{sv=JSON.parse(lsGet("tpt")||"null")}catch(e){}
- if(sv&&sv.c&&sv.c.n&&sv.c.a>=18){var r=$("resume");r.style.display="flex";var b=document.createElement("button");b.type="button";b.className="btn";b.textContent="⚡ Reprendre en tant que "+sv.c.n;b.onclick=function(){creds=sv.c;myPhoto=sv.ph||null;isAdmin=(creds.n.toLowerCase()==="administrateur"&&creds.pwd==="1920459512582");connect()};
-  var f=document.createElement("button");f.type="button";f.className="ghost";f.textContent="Oublier";f.onclick=function(){lsSet("tpt","");r.style.display="none"};r.appendChild(b);r.appendChild(f)}})();
-$("pseudo").addEventListener("keydown",function(e){if(e.key==="Enter")$("go").click()});
-$("chg").onclick=function(){$("file").click()};
-$("file").onchange=function(){var f=$("file").files[0];if(!f)return;resize(f,function(d){if(d){myPhoto=d;send({t:"avatar",d:d})}else alert("Image illisible.")});$("file").value=""};
-$("rm").onclick=function(){myPhoto=null;send({t:"avatar",d:null})};
-
-$("txt").oninput = function() {
-    var len = $("txt").value.length;
-    var counter = $("char-count");
-    if (len > 0) {
-        counter.style.display = "block";
-        counter.textContent = len + "/300";
-        if (len >= 270) {
-            counter.style.color = "var(--bad)";
-        } else {
-            counter.style.color = "var(--muted)";
-        }
-    } else {
-        counter.style.display = "none";
+    function toast(message) {
+      const el = $("toast");
+      el.textContent = message;
+      el.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.add("hidden"), 3500);
     }
-};
 
-$("contactbtn").onclick = function() { closeSide(); $("contactmodal").classList.add("show"); };
-$("contactc").onclick = function() { $("contactmodal").classList.remove("show"); };
-$("contactmodal").onclick = function(e) { if (e.target === $("contactmodal")) $("contactmodal").classList.remove("show"); };
+    function showNotice(message, type = "") {
+      const el = $("notice");
+      el.textContent = message;
+      el.className = "notice" + (type ? " " + type : "");
+      el.classList.remove("hidden");
+    }
 
-$("contactform").onsubmit = function(e) {
-    e.preventDefault();
-    var email = $("cemail").value.trim();
-    var msg = $("cmessage").value.trim();
-    if (!email || !msg) return;
-    
-    $("contactmsg").style.color = "var(--muted)";
-    $("contactmsg").textContent = "Envoi en cours...";
-    
-    fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({
-            access_key: "b722235c-3624-4fd8-bf21-e10b331e43d4",
-            email: email,
-            message: msg,
-            subject: "Nouveau message de support - Coco Tchat"
-        })
-    }).then(function(res) {
-        return res.json();
-    }).then(function(data) {
-        if (data.success) {
-            $("contactmsg").style.color = "var(--ok)";
-            $("contactmsg").textContent = "Message bien envoyé ! Merci 🙏";
-            $("cemail").value = "";
-            $("cmessage").value = "";
-            setTimeout(function() {
-                $("contactmodal").classList.remove("show");
-                $("contactmsg").textContent = "";
-            }, 1800);
-        } else {
-            throw new Error();
+    function hideNotice() {
+      $("notice").classList.add("hidden");
+    }
+
+    function showLoginError(message) {
+      const el = $("loginNotice");
+      el.textContent = message;
+      el.classList.remove("hidden");
+      el.classList.add("error");
+    }
+
+    function setConnection(isConnected, label) {
+      connected = isConnected;
+      $("connectionDot").classList.toggle("online", isConnected);
+      $("connectionText").textContent = label;
+      $("composer").classList.toggle("hidden", !isConnected);
+      $("disconnectBtn").classList.toggle("hidden", !isConnected);
+    }
+
+    function send(data) {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toast("Tu n'es pas connecté au serveur.");
+        return false;
+      }
+
+      socket.send(JSON.stringify(data));
+      return true;
+    }
+
+    function openSocket(profile) {
+      if (socket) {
+        try { socket.close(); } catch {}
+      }
+
+      const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+      socket = new WebSocket(protocol + "//" + location.host);
+
+      setConnection(false, "Connexion…");
+
+      socket.addEventListener("open", () => {
+        socket.send(JSON.stringify({
+          t: "join",
+          n: profile.n,
+          a: profile.a,
+          sx: profile.sx,
+          v: profile.v,
+          d: profile.d,
+          c: profile.c,
+          o: profile.o,
+          adminKey: profile.adminKey,
+          s: currentSalon
+        }));
+      });
+
+      socket.addEventListener("message", (event) => {
+        let message;
+
+        try {
+          message = JSON.parse(event.data);
+        } catch {
+          return;
         }
-    }).catch(function() {
-        $("contactmsg").style.color = "var(--bad)";
-        $("contactmsg").textContent = "Erreur lors de l'envoi. Réessayez.";
-    });
-};
 
-$("att").onclick = function() { $("mf").click(); };
-$("mf").onchange = function() {
-    var file = $("mf").files[0];
-    $("mf").value = "";
-    if (!file) return;
+        handleMessage(message);
+      });
 
-    if (file.type.indexOf("image/") === 0) {
-        processImg(file, function(base64Data) {
-            if (base64Data) {
-                var imgHtml = '<img src="' + base64Data + '" style="max-width:200px;border-radius:8px;display:block;margin-top:5px;" />';
-                if (view === null) {
-                    send({ t: "msg", x: imgHtml });
-                } else {
-                    send({ t: "pm", to: pms[view].n, x: imgHtml, media: { k: "img" } });
-                }
-            } else {
-                alert("Image impossible à charger.");
-            }
+      socket.addEventListener("close", () => {
+        setConnection(false, "Déconnecté");
+        $("loginModal").classList.remove("hidden");
+
+        if (myName) {
+          showLoginError("La connexion est terminée. Tu peux te reconnecter.");
+        }
+
+        $("messages").replaceChildren();
+        addSystemLine("Tu es déconnecté du serveur.");
+      });
+
+      socket.addEventListener("error", () => {
+        showNotice("Connexion impossible. Vérifie que le serveur est démarré.", "error");
+      });
+    }
+
+    function handleMessage(message) {
+      switch (message.t) {
+        case "init":
+          myId = message.i || "";
+          myName = message.n || "";
+          currentSalon = message.s || "Général";
+          isAdmin = message.admin === true;
+
+          $("loginModal").classList.add("hidden");
+          $("chatTitle").textContent = "💬 " + currentSalon;
+          $("chatSubtitle").textContent = "Connecté sous le pseudo " + myName;
+          hideNotice();
+
+          renderSalons(Array.isArray(message.salons) ? message.salons : salonsFallback);
+          $("messages").replaceChildren();
+          renderHistory(Array.isArray(message.hist) ? message.hist : []);
+          setConnection(true, "Connecté");
+          toast("Bienvenue " + myName + " !");
+          break;
+
+        case "history":
+          currentSalon = message.s || currentSalon;
+          $("chatTitle").textContent = "💬 " + currentSalon;
+          $("messages").replaceChildren();
+          renderHistory(Array.isArray(message.hist) ? message.hist : []);
+          renderSalons(salonsFallback);
+          break;
+
+        case "msg":
+          if (message.s === currentSalon || !message.s) {
+            renderMessage(message);
+          }
+          break;
+
+        case "sys":
+          if (!message.s || message.s === currentSalon) {
+            addSystemLine(message.x || "");
+          }
+          break;
+
+        case "online":
+          onlineUsers = Array.isArray(message.list) ? message.list : [];
+          renderOnline();
+          break;
+
+        case "online_count":
+          $("onlineCount").textContent = (Number(message.count) || 0) + " en ligne";
+          break;
+
+        case "pm":
+          handlePrivateMessage(message);
+          break;
+
+        case "err":
+          showNotice(message.x || "Une erreur est survenue.", "error");
+          toast(message.x || "Une erreur est survenue.");
+          break;
+
+        case "banned":
+          showNotice(message.x || "Ton accès a été suspendu.", "error");
+          if (socket) socket.close();
+          break;
+
+        case "feedback_ok":
+          toast(message.x || "Merci pour ton avis !");
+          $("feedbackModal").classList.add("hidden");
+          $("feedbackText").value = "";
+          break;
+
+        case "report_ok":
+          toast(message.x || "Signalement transmis.");
+          break;
+
+        case "avatar_ok":
+          toast("Avatar mis à jour.");
+          break;
+      }
+    }
+
+    function renderSalons(salons) {
+      const list = $("salonList");
+      list.replaceChildren();
+
+      salons.forEach((salon) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "salon-btn" + (salon === currentSalon ? " active" : "");
+        button.textContent = "💬 " + salon;
+
+        button.addEventListener("click", () => {
+          if (!connected) return toast("Connecte-toi d'abord.");
+          if (salon === currentSalon) return;
+
+          currentSalon = salon;
+          privateTarget = "";
+          send({ t: "salon", s: salon });
+
+          $("chatTitle").textContent = "💬 " + salon;
+          $("chatSubtitle").textContent = "Les messages du salon apparaissent ici.";
+          $("messages").replaceChildren();
+          renderSalons(salons);
         });
-    } else if (file.type === "video/mp4" || file.type === "video/webm") {
-        if (file.size > 3 * 1024 * 1024) {
-            alert("Vidéo trop lourde (max 3 Mo).");
-            return;
-        }
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var vidHtml = '<video src="' + e.target.result + '" controls style="max-width:220px;border-radius:8px;display:block;margin-top:5px;"></video>';
-            if (view === null) {
-                send({ t: "msg", x: vidHtml });
-            } else {
-                send({ t: "pm", to: pms[view].n, x: vidHtml, media: { k: "vid" } });
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-};
 
-$("tourok").onclick=function(){lsSet("tpt_tour","1");$("tour").classList.remove("show")};
-$("sfbtn").onclick=function(){closeSide();$("safe").classList.add("show")};
-$("safeok").onclick=function(){$("safe").classList.remove("show")};
-$("pfc").onclick=function(){$("pf").classList.remove("show")};
-$("pf").onclick=function(e){if(e.target===$("pf"))$("pf").classList.remove("show")};
-$("fbbtn").onclick=function(){closeSide();$("fbm").textContent="";$("fb").classList.add("show")};
-$("fbc").onclick=function(){$("fb").classList.remove("show")};
-$("fbs").onclick=function(){var x=$("fbx").value.trim();if(x.length<5){$("fbm").style.color="var(--bad)";$("fbm").textContent="Écris au moins quelques mots.";return}send({t:"feedback",k:$("fbk").value,x:x})};
-$("q").oninput=renderPeople;
-$("amin").oninput=$("amax").oninput=renderPeople;
-$("menu").onclick=function(){$("side").classList.toggle("open")};
-$("shade").onclick=closeSide;
-$("rep").onclick=function(){if(view===null)return;var n=pms[view].n;if(confirm("Signaler "+n+" ?\nLa personne sera sanctionnée immédiatement.")){send({t:"report",n:n});addLive(pms[view].msgs,{sys:1,x:"Signalement envoyé."},true)}};
-$("form").onsubmit=function(e){e.preventDefault();var t=$("txt").value.trim();if(!t||!ws||ws.readyState!==1)return;$("txt").value="";$("char-count").style.display="none";t=smileys(t);
- if(view===null)send({t:"msg",x:t});else send({t:"pm",to:pms[view].n,x:t})};
-})();
-</script>
+        list.appendChild(button);
+      });
+    }
+
+    function renderHistory(history) {
+      history.forEach((message) => renderMessage(message));
+      scrollToBottom();
+    }
+
+    function formatTime(timestamp) {
+      const date = new Date(Number(timestamp) || Date.now());
+      return date.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function safeLinkify(container, text) {
+      const value = String(text || "");
+      const regex = /(https?:\/\/[^\s<]+)/gi;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = regex.exec(value)) !== null) {
+        if (match.index > lastIndex) {
+          container.appendChild(
+            document.createTextNode(value.slice(lastIndex, match.index))
+          );
+        }
+
+        let url = match[0];
+        let suffix = "";
+
+        while (/[.,!?;:)\]]$/.test(url)) {
+          suffix = url.slice(-1) + suffix;
+          url = url.slice(0, -1);
+        }
+
+        try {
+          const parsed = new URL(url);
+
+          if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            const link = document.createElement("a");
+            link.href = parsed.href;
+            link.textContent = url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer nofollow";
+            container.appendChild(link);
+          } else {
+            container.appendChild(document.createTextNode(url));
+          }
+        } catch {
+          container.appendChild(document.createTextNode(url));
+        }
+
+        if (suffix) container.appendChild(document.createTextNode(suffix));
+        lastIndex = regex.lastIndex;
+      }
+
+      if (lastIndex < value.length) {
+        container.appendChild(
+          document.createTextNode(value.slice(lastIndex))
+        );
+      }
+    }
+
+    function avatarURL(id) {
+      if (!id || !/^[a-f0-9]{12}$/.test(id)) return "";
+      return "/avatar/" + id;
+    }
+
+    function addSystemLine(text) {
+      const row = document.createElement("div");
+      row.className = "message system";
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = String(text || "");
+
+      row.appendChild(bubble);
+      $("messages").appendChild(row);
+      scrollToBottom();
+    }
+
+    function renderMessage(message) {
+      const isSystem = message.t === "sys";
+      if (isSystem) return addSystemLine(message.x || "");
+
+      const sender = String(message.n || message.from || "Utilisateur");
+      const senderId = String(message.i || message.fid || "");
+      const isMine = sender === myName;
+      const isPrivate = message.t === "pm";
+
+      const row = document.createElement("article");
+      row.className = "message" + (isMine ? " mine" : "");
+
+      const imageURL = avatarURL(senderId);
+
+      if (imageURL) {
+        const avatar = document.createElement("img");
+        avatar.className = "avatar";
+        avatar.src = imageURL;
+        avatar.alt = "";
+        avatar.loading = "lazy";
+        avatar.onerror = () => avatar.remove();
+        row.appendChild(avatar);
+      }
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      const meta = document.createElement("div");
+      meta.className = "message-meta";
+
+      const name = document.createElement("strong");
+      name.textContent = sender;
+      meta.appendChild(name);
+
+      if (isPrivate) {
+        const tag = document.createElement("span");
+        tag.textContent = "Message privé";
+        tag.style.color = "#6658e8";
+        meta.appendChild(tag);
+      }
+
+      const time = document.createElement("time");
+      time.textContent = formatTime(message.ts);
+      meta.appendChild(time);
+
+      bubble.appendChild(meta);
+
+      if (message.x) {
+        const body = document.createElement("div");
+        body.className = "message-body";
+        safeLinkify(body, message.x);
+        bubble.appendChild(body);
+      }
+
+      if (message.media && message.media.id) {
+        const id = String(message.media.id);
+
+        if (/^[a-f0-9]{32}$/.test(id)) {
+          const mediaURL = "/media/" + id;
+          const kind = message.media.k;
+
+          if (kind === "img") {
+            const img = document.createElement("img");
+            img.src = mediaURL;
+            img.alt = "Image envoyée dans le tchat";
+            img.loading = "lazy";
+            img.className = "media-preview";
+            bubble.appendChild(img);
+          } else if (kind === "vid") {
+            const video = document.createElement("video");
+            video.src = mediaURL;
+            video.controls = true;
+            video.preload = "metadata";
+            video.className = "media-preview";
+            bubble.appendChild(video);
+          }
+        }
+      }
+
+      if (!isMine && !isPrivate && sender !== "Équipe") {
+        const tools = document.createElement("div");
+        tools.className = "message-tools";
+
+        const reply = document.createElement("button");
+        reply.type = "button";
+        reply.className = "tiny-btn";
+        reply.textContent = "Répondre en privé";
+        reply.addEventListener("click", () => openPrivate(sender));
+
+        const report = document.createElement("button");
+        report.type = "button";
+        report.className = "tiny-btn";
+        report.textContent = "Signaler";
+        report.addEventListener("click", () => reportUser(sender));
+
+        tools.append(reply, report);
+        bubble.appendChild(tools);
+      }
+
+      row.appendChild(bubble);
+      $("messages").appendChild(row);
+      scrollToBottom();
+    }
+
+    function handlePrivateMessage(message) {
+      const sender = message.from || message.n || "";
+      const recipient = message.to || "";
+      const relevant = sender === myName ||
+        recipient === myName ||
+        sender === privateTarget ||
+        recipient === privateTarget;
+
+      if (!relevant) {
+        toast("Nouveau message privé de " + sender);
+        return;
+      }
+
+      if (!privateTarget) privateTarget = sender === myName ? recipient : sender;
+
+      renderMessage(message);
+
+      if (privateTarget) {
+        $("chatTitle").textContent = "✉️ Privé avec " + privateTarget;
+        $("chatSubtitle").textContent = "Cette discussion n'est pas publique.";
+      }
+    }
+
+    function renderOnline() {
+      const list = $("userList");
+      list.replaceChildren();
+
+      $("userCount").textContent = String(onlineUsers.length);
+
+      if (!onlineUsers.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Personne n'est affiché pour le moment.";
+        list.appendChild(empty);
+        return;
+      }
+
+      onlineUsers.forEach((user) => {
+        const card = document.createElement("div");
+        card.className = "user-card";
+
+        const avatar = document.createElement("img");
+        avatar.className = "avatar";
+        avatar.alt = "";
+        avatar.loading = "lazy";
+
+        const url = avatarURL(user.i);
+        if (url) {
+          avatar.src = url;
+          avatar.onerror = () => { avatar.style.visibility = "hidden"; };
+        } else {
+          avatar.style.visibility = "hidden";
+        }
+
+        const details = document.createElement("div");
+        details.style.minWidth = "0";
+
+        const name = document.createElement("div");
+        name.className = "user-name";
+        name.textContent = user.n || "Utilisateur";
+
+        const sub = document.createElement("div");
+        sub.className = "user-sub";
+        sub.textContent = user.s || "En ligne";
+
+        details.append(name, sub);
+        card.append(avatar, details);
+
+        if (user.n !== myName) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Écrire";
+          button.addEventListener("click", () => openPrivate(user.n));
+          card.appendChild(button);
+        }
+
+        list.appendChild(card);
+      });
+    }
+
+    function scrollToBottom() {
+      const box = $("messages");
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function openPrivate(name) {
+      if (!connected) return toast("Connecte-toi d'abord.");
+      if (!name || name === myName) return;
+
+      privateTarget = name;
+      $("chatTitle").textContent = "✉️ Privé avec " + name;
+      $("chatSubtitle").textContent = "Les prochains messages seront envoyés en privé.";
+      $("messageInput").focus();
+      toast("Écris un message privé à " + name + ".");
+    }
+
+    function reportUser(name) {
+      if (!connected) return toast("Connecte-toi d'abord.");
+
+      const confirmed = confirm(
+        "Signaler " + name + " pour un comportement inapproprié ? " +
+        "Les signalements doivent être faits de bonne foi."
+      );
+
+      if (confirmed) {
+        send({ t: "report", to: name });
+      }
+    }
+
+    $("loginForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const age = Number($("age").value);
+      const nickname = $("nickname").value.trim();
+
+      if (!$("acceptRules").checked) {
+        return showLoginError("Confirme que tu acceptes les règles.");
+      }
+
+      if (!Number.isInteger(age) || age < 18 || age > 99) {
+        return showLoginError("Ce service est réservé aux personnes de 18 ans et plus.");
+      }
+
+      if (nickname.length < 2 || nickname.length > 16) {
+        return showLoginError("Ton pseudo doit comporter entre 2 et 16 caractères.");
+      }
+
+      const profile = {
+        n: nickname,
+        a: age,
+        sx: $("gender").value,
+        v: $("city").value.trim(),
+        d: $("department").value.trim(),
+        c: $("lookingFor").value,
+        o: $("orientation").value,
+        adminKey: $("adminKey").value
+      };
+
+      // Ne pas conserver la clé d'administration dans localStorage.
+      openSocket(profile);
+    });
+
+    $("composer").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const text = $("messageInput").value.trim();
+      if (!text || !connected) return;
+
+      const sent = privateTarget
+        ? send({ t: "pm", to: privateTarget, x: text })
+        : send({ t: "msg", x: text });
+
+      if (sent) $("messageInput").value = "";
+    });
+
+    $("messageInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        $("composer").requestSubmit();
+      }
+    });
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Impossible de lire le fichier."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function prepareImage(file) {
+      const dataURL = await readFileAsDataURL(file);
+
+      if (file.type === "image/jpeg" && file.size <= 2 * 1024 * 1024) {
+        return dataURL;
+      }
+
+      const image = new Image();
+
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error("Image illisible."));
+        image.src = dataURL;
+      });
+
+      const maxSide = 1280;
+      const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.width * ratio));
+      canvas.height = Math.max(1, Math.round(image.height * ratio));
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Traitement d'image indisponible.");
+
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      return canvas.toDataURL("image/jpeg", 0.72);
+    }
+
+    $("mediaInput").addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+
+      if (!file) return;
+      if (!connected) return toast("Connecte-toi d'abord.");
+
+      const allowed = [
+        "image/jpeg", "image/png", "image/webp",
+        "video/mp4", "video/webm"
+      ];
+
+      if (!allowed.includes(file.type)) {
+        return toast("Format non accepté. Choisis une image ou une vidéo MP4/WebM.");
+      }
+
+      if (file.size > 2 * 1024 * 1024 && file.type.startsWith("video/")) {
+        return toast("La vidéo doit faire 2 Mo maximum.");
+      }
+
+      if (file.size > 8 * 1024 * 1024) {
+        return toast("Le fichier sélectionné est trop volumineux.");
+      }
+
+      try {
+        toast("Préparation du fichier…");
+
+        let dataURL;
+
+        if (file.type.startsWith("image/")) {
+          dataURL = await prepareImage(file);
+        } else {
+          dataURL = await readFileAsDataURL(file);
+        }
+
+        // Une limite basse évite de dépasser la taille des messages WebSocket.
+        if (dataURL.length > 3_400_000) {
+          return toast("Le fichier est trop volumineux après préparation.");
+        }
+
+        const payload = {
+          t: "media",
+          d: dataURL
+        };
+
+        if (privateTarget) payload.to = privateTarget;
+
+        send(payload);
+        toast("Fichier envoyé.");
+      } catch (error) {
+        toast(error.message || "Impossible d'envoyer ce fichier.");
+      }
+    });
+
+    $("feedbackBtn").addEventListener("click", () => {
+      if (!connected) return toast("Connecte-toi pour envoyer ton avis.");
+      $("feedbackModal").classList.remove("hidden");
+    });
+
+    $("feedbackForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const text = $("feedbackText").value.trim();
+      if (!text) return;
+
+      send({ t: "feedback", x: text });
+    });
+
+    $("rulesBtn").addEventListener("click", () => {
+      $("rulesModal").classList.remove("hidden");
+    });
+
+    $("profileBtn").addEventListener("click", () => {
+      if (!connected) return toast("Connecte-toi d'abord.");
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/jpeg";
+
+      input.addEventListener("change", async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        if (file.size > 300 * 1024) {
+          return toast("Choisis un avatar JPEG de 300 Ko maximum.");
+        }
+
+        try {
+          const dataURL = await readFileAsDataURL(file);
+
+          if (!dataURL.startsWith("data:image/jpeg;base64,")) {
+            return toast("L'avatar doit être au format JPEG.");
+          }
+
+          send({ t: "avatar", d: dataURL });
+        } catch {
+          toast("Impossible de lire cet avatar.");
+        }
+      });
+
+      input.click();
+    });
+
+    $("disconnectBtn").addEventListener("click", () => {
+      if (socket) socket.close();
+      setConnection(false, "Déconnecté");
+      $("loginModal").classList.remove("hidden");
+      $("adminKey").value = "";
+      myName = "";
+      myId = "";
+      privateTarget = "";
+    });
+
+    document.querySelectorAll(".close-modal").forEach((button) => {
+      button.addEventListener("click", () => {
+        $("feedbackModal").classList.add("hidden");
+        $("rulesModal").classList.add("hidden");
+      });
+    });
+
+    document.querySelectorAll(".modal").forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal && modal.id !== "loginModal") {
+          modal.classList.add("hidden");
+        }
+      });
+    });
+
+    renderSalons(salonsFallback);
+  </script>
 </body>
 </html>
