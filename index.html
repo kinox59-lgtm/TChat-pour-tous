@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,6 +7,9 @@
   <meta name="description" content="Coco Tchat : salons de discussion et messages en temps réel.">
   <link rel="manifest" href="/manifest.webmanifest">
   <title>Coco Tchat</title>
+
+  <!-- Script Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
     :root {
@@ -665,6 +667,9 @@
             placeholder="Laisse vide si tu n'es pas modérateur">
         </div>
 
+        <!-- Widget Cloudflare Turnstile -->
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFXj08CLWxiKawxa" style="margin: 8px 0;"></div>
+
         <label style="font-size:13px;display:flex;gap:9px;align-items:flex-start">
           <input id="acceptRules" type="checkbox" required style="margin-top:3px">
           <span>Je confirme avoir 18 ans ou plus et j'accepte les règles de respect et de sécurité du tchat.</span>
@@ -805,6 +810,7 @@
           c: profile.c,
           o: profile.o,
           adminKey: profile.adminKey,
+          token: profile.token,
           s: currentSalon
         }));
       });
@@ -1243,6 +1249,8 @@
 
       const age = Number($("age").value);
       const nickname = $("nickname").value.trim();
+      const turnstileEl = document.querySelector('[name="cf-turnstile-response"]');
+      const token = turnstileEl ? turnstileEl.value : "";
 
       if (!$("acceptRules").checked) {
         return showLoginError("Confirme que tu acceptes les règles.");
@@ -1264,10 +1272,10 @@
         d: $("department").value.trim(),
         c: $("lookingFor").value,
         o: $("orientation").value,
-        adminKey: $("adminKey").value
+        adminKey: $("adminKey").value,
+        token: token
       };
 
-      // Ne pas conserver la clé d'administration dans localStorage.
       openSocket(profile);
     });
 
@@ -1364,7 +1372,6 @@
           dataURL = await readFileAsDataURL(file);
         }
 
-        // Une limite basse évite de dépasser la taille des messages WebSocket.
         if (dataURL.length > 3_400_000) {
           return toast("Le fichier est trop volumineux après préparation.");
         }
