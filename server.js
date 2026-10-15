@@ -200,7 +200,7 @@ function addMedia(buffer, type, owner) {
 
 function parseDataURL(value) {
   if (typeof value !== "string") throw new Error("Fichier invalide.");
-  const match = /^data:(image\/[a-zA-Z+.-]+|video\/[a-zA-Z+.-]+|audio\/[a-zA-Z+.-]+);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
+  const match = /^data:(image\/(?:jpeg|png|gif|webp)|video\/(?:mp4|webm)|audio\/(?:webm|ogg|mpeg|mp4|wav));base64,([A-Za-z0-9+/=\r\n]+)$/.exec(value);
   if (!match) throw new Error("Format non accepté.");
   const buffer = Buffer.from(match[2], "base64");
   if (!buffer.length || buffer.length > 10 * 1024 * 1024) throw new Error("Fichier trop volumineux (10 Mo max).");
@@ -328,7 +328,9 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, {
         "Content-Type": file.type,
         "Content-Length": file.buf.length,
-        "Cache-Control": "private, no-store"
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "default-src 'none'; sandbox"
       });
       return res.end(file.buf);
     }
@@ -409,12 +411,15 @@ wss.on("connection", (ws, req) => {
         return send(ws, { t: "err", x: "Ce pseudo est protégé par un mot de passe. Entre ton mot de passe pour te connecter." });
       }
 
+      const age = parseInt(message.a, 10);
+      if (!(age >= 18 && age <= 99)) return send(ws, { t: "err", x: "Réservé aux 18 ans et plus." });
+
       const admin = isAdminMessage(message);
 
       client = {
         n: uniqueName(name),
-        a: Number(message.a) || 18,
-        sx: message.sx || "",
+        a: age,
+        sx: ["H", "F", "T"].includes(message.sx) ? message.sx : "",
         v: clean(message.v, 20),
         s: validSalon(message.s) ? message.s : SALONS[0],
         key, admin, id: crypto.randomBytes(6).toString("hex"), av: 0, since: now,
@@ -440,6 +445,12 @@ wss.on("connection", (ws, req) => {
     }
 
     if (!client) return;
+
+    if (message.t === "msg" || message.t === "pm" || message.t === "media") {
+      client.stamps = (client.stamps || []).filter((t) => now - t < 5000);
+      if (client.stamps.length >= 5) return send(ws, { t: "err", x: "Doucement, tu écris trop vite !" });
+      client.stamps.push(now);
+    }
 
     if (message.t === "update_friends") {
       if (client.lowerName && Array.isArray(message.friends) && usersDB[client.lowerName]) {
