@@ -1,4 +1,3 @@
-
 "use strict";
 
 // Coco Tchat — serveur Node.js pour Render
@@ -13,6 +12,7 @@ const { WebSocketServer, WebSocket } = require("ws");
 
 const PORT = Number(process.env.PORT) || 3000;
 const ADMIN_KEY = process.env.ADMIN_KEY || "";
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || "";
 const SALT = process.env.SALT || crypto.randomBytes(32).toString("hex");
 const DATA_DIR = process.env.DATA_DIR || __dirname;
 const BAN_FILE = process.env.DATA_FILE || path.join(DATA_DIR, "bans.json");
@@ -67,6 +67,29 @@ const recentReports = new Map();
 
 let mediaBytes = 0;
 let onlineTimer = null;
+
+async function verifyTurnstile(token, ip) {
+  if (!TURNSTILE_SECRET_KEY) return true;
+  if (!token) return false;
+
+  try {
+    const params = new URLSearchParams();
+    params.append("secret", TURNSTILE_SECRET_KEY);
+    params.append("response", token);
+    if (ip) params.append("remoteip", ip);
+
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: params
+    });
+
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error("Erreur de vérification Turnstile :", error.message);
+    return false;
+  }
+}
 
 function readJSON(file, fallback) {
   try {
@@ -180,8 +203,6 @@ function uniqueName(name) {
 }
 
 function clientKey(req) {
-  // Ne pas faire confiance à x-forwarded-for sans proxy de confiance.
-  // Render place le service derrière son infrastructure proxy.
   const forwarded = String(req.headers["x-forwarded-for"] || "")
     .split(",")[0]
     .trim();
@@ -517,13 +538,14 @@ wss.on("connection", (ws, req) => {
   ws.isAlive = true;
 
   const key = clientKey(req);
+  const clientIp = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress || "";
   const messageTimes = [];
 
   ws.on("pong", () => {
     ws.isAlive = true;
   });
 
-  ws.on("message", (raw) => {
+  ws.on("message", async (raw) => {
     let message;
 
     try {
@@ -536,7 +558,6 @@ wss.on("connection", (ws, req) => {
 
     const now = Date.now();
 
-    // Limite de fréquence générale.
     while (messageTimes.length && messageTimes[0] < now - 10000) {
       messageTimes.shift();
     }
@@ -562,8 +583,15 @@ wss.on("connection", (ws, req) => {
         });
       }
 
-      // Le site est réservé aux adultes. Cette vérification côté serveur
-      // complète l'écran de confirmation de l'interface.
+      // Vérification du jeton Turnstile
+      const turnstileValid = await verifyTurnstile(message.token, clientIp);
+      if (!turnstileValid) {
+        return send(ws, {
+          t: "err",
+          x: "Vérification de sécurité (Turnstile) échouée. Merci de réessayer."
+        });
+      }
+
       const age = Number.parseInt(message.a, 10);
 
       if (!Number.isInteger(age) || age < 18 || age > 99) {
@@ -866,7 +894,6 @@ wss.on("connection", (ws, req) => {
 
       send(ws, { t: "report_ok", x: "Signalement transmis." });
 
-      // Plusieurs personnes distinctes doivent signaler le même compte.
       const reporters = new Set(
         [...clients.entries()]
           .filter(([socket, c]) =>
@@ -899,7 +926,6 @@ wss.on("connection", (ws, req) => {
   });
 });
 
-// Nettoyage des médias temporaires.
 setInterval(() => {
   const cutoff = Date.now() - MEDIA_TTL;
 
@@ -914,7 +940,6 @@ setInterval(() => {
   }
 }, 60 * 1000).unref();
 
-// Détection des connexions WebSocket inactives.
 const heartbeat = setInterval(() => {
   for (const ws of wss.clients) {
     if (ws.isAlive === false) {
